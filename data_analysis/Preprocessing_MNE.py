@@ -13,19 +13,21 @@ Created on June 16, 2019
 """
 
 import os, sys
+import pprint
+import collections
+from datetime import datetime
+
 import pandas as pd
 import numpy as np
 import mne
-from datetime import datetime
-from mne_bids import write_raw_bids, make_bids_basename, read_raw_bids
-from mne.datasets import sample
-from mne_bids.utils import print_dir_tree
-os.chdir('/net/store/nbp/projects/hyperscanning/hyperscanning-2.0')
-from subsetting_script import sub2, sub1
-from functions_MNE import *
 import pybv
-import pprint
-import collections
+from mne.datasets import sample
+from mne_bids import write_raw_bids, make_bids_basename, read_raw_bids
+from mne_bids.utils import print_dir_tree
+
+
+from .subsetting_script import sub2, sub1
+from .functions_MNE import *
 
 # set current working directory
 os.chdir('/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/mne_data/sourcedata')

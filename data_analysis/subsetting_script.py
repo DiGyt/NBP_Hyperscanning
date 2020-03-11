@@ -7,7 +7,7 @@ import mne
 import numpy as np
 import pandas as pd
 import pybv
-from functions_MNE import *
+from .functions_MNE import *
 
 # %%
 # class Subset:

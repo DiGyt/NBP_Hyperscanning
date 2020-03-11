@@ -7,11 +7,12 @@ Created on July 16, 2019
 """
 
 import os, sys
-import mne
+import collections
+
 import numpy as np
 import pandas as pd
 import pybv
-import collections
+import mne
 from mne_bids import write_raw_bids, make_bids_basename, read_raw_bids
 
 
