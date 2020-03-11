@@ -1,0 +1,49 @@
+﻿1. Green fixation screen 1 (training)
+2. Green fixation screen 2 (training)
+3. Red cross both screens (exp)
+4. Green cross screen 1
+5. Green cross screen 2
+6. Player 1 press 1
+7. Player 1 press 2
+8. Player 1 press 3
+9. Player 1 press 4
+10. Player 1 press 5
+11. Player 1 press 6
+12. Player 1 press 7
+13. Player 1 press 8
+14. Player 1 press 9
+15. Player 2 press 1
+16. Player 2 press 2
+17. Player 2 press 3
+18. Player 2 press 4
+19. Player 2 press 5
+20. Player 2 press 6
+21. Player 2 press 7
+22. Player 2 press 8
+23. Player 2 press 9
+24. Block 1 start
+25. Block 2 start
+26. Block 3 start
+27. Block 4 start
+28. Block 5 start
+29. Block 6 start
+30. Block 7 start
+31. Block 8 start
+32. Block 9 start
+33. Block 10 start
+34. Block 11 start
+35. Block 12 start
+36. Block 1 end
+37. Block 2 end
+38. Block 3 end
+39. Block 4 end
+40. Block 5 end
+41. Block 6 end
+42. Block 7 end
+43. Block 8 end
+44. Block 9 end
+45. Block 10 end
+46. Block 11 end
+47. Block 12 end
+48. Trial start
+49. Trial end

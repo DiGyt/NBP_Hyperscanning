@@ -1,0 +1,47 @@
+Experiment No.,Screen Nr.,Date,Time,Remarks,Name,mail address,age,handness,VP/$,EEG (yes/no),gender,Which cap?,Which amplifier?
+100,,05.09.18,14:30,discarded from pilot,Jan-Michel Nöring,jnoering@uos.de,21,right,VP,no,male,,
+100,,05.09.18,14:30,discarded from pilot,Thekla Düngen,tduengen@uos.de,23,right,$,no,female,,
+110,1,11.09.18,14:45 - 15:53,,Lotte Buhre,cbuhre@uos.de,21,right,$,no,female,,
+110,2,11.09.18,14:45 - 15:53,,Francesca Meroni,francesca.meroni@gmail.com,26,right,_,no,female,,
+111,1,12.09.18,15:00 - 16:00,experiment failed ,Lucas Essman,lessmann@uos.de,22,left,VP,no,male,,
+111,2,12.09.18,15:00 - 16:00,"experiment failed, Till likes to explore the keyboard ",Till Holzapfel,,26,right,VP,no,male,,
+112,1,13.09.18,13:30 - 14:30,experiment failed ,Paul Liebenow,pliebenow@uos.de,25,right,$ (10€),no,male,,
+112,2,13.09.18,13:30 - 14:30,experiment failed ,Tobias Ludwig,,21,right,VP,no,male,,
+114,1,17.09.19,14:00 - 15:30,,Yana Schwarze,yschwarze@uos.de,22,right,$,no,female,,
+114,2,17.09.19,14:00 - 15:30,,Cedric Waterschoot,cwaterschoot@uos.de,23,right,VP,no,male,,
+116,1,17.09.18,16:40 - 18:00,,Thomas Klein,tklein@uos.de,22,right,$,no,male,,
+116,2,17.09.18,16:40 - 18:00,,Felizia Goeltenboth,felizia.geoltenboth@gmail.com,24,right,$,no,female,,
+117,1,19.09.18,14:00 - 15:30,,Magali Beylat,m.m.m.beylat@uvt.nl,24,right,$,no,female,,
+117,2,19.09.18,14:00 - 15:30,,Kristopher Lazarz,kristopher.lazarz@hs-osnabrueck.de,31,right,$,no,male,,
+118,1,20.09.18,14:00 -,,Nanilethu Ngcukayithobi ,nanilethungcukayitobi@gmail.com,21,right,$,no,female,,
+118,2,20.09.18,14:00 -,,Tina Bebe,tinabebe598@gmail.com,24,right,$,no,female,,
+200,1,26.10.18,10:15 - 11:30,triggers off after block 6,Artur Czeszumski,aczeszumski@uos.de,28,right,_,yes,male,,
+200,2,26.10.18,10:15 - 11:30,triggers off after block 6,Max Tiessen,mtiessen@uos.de,23,right,_,yes,male,,
+201,1,29.10.18,18:10 - 19:20,success,Susanne Schuberth,sschuberth@uos.de,28,right,_,yes,female,,
+201,2,29.10.18,18:10 - 19:20,success,Nelly von Puttkamer,nellyvp@uni-bremen.de,24,right,_,yes,female,,
+202,1,01.11.18,16:00 - 17:00,success,Malte Heyen,mheyen@uos.de,23,right,$,yes,male,,
+202,2,01.11.18,16:00 - 17:00,success,Helena Wasle,hwasle@uos.de,21,right,,yes,female,,
+203,1,05.11.18,14:00 - 17:00,success,Linus kleine Kruthaup,lkleinekruth@uos.de,18,left,VP,yes,male,M non-green,Amp 2
+203,2,05.11.18,14:00 - 17:00,success,Paul Schütze,pschuetze@uos.de,23,right,VP,yes,male,M green,Amp 1
+204,1,05.11.18,17:00 - 20:00,success,Inga Wohlert,iwohlert@uos.de,19,right,VP,yes,female,S,Amp 2
+204,2,05.11.18,17:00 - 20:00,success,Florian Stutzky,fstutzky@uos.de,20,right,VP,yes,male,M green,Amp 1
+205,1,06.11.18,14:30 - 17:30,success,Leslie Wolk,lwolk@uos.de,30,right,VP,yes,female,S,Amp 2
+205,2,06.11.18,14:30 - 17:30,success,Jana Steiner,jsteiner@uos.de,20,right,$,yes,female,M green,Amp 1
+206,1,07.11.18,12:30 - 15:30,success,Franziska Gellert,fgellert@uos.de ,21,right,$,yes,female, M non-green,Amp 2
+206,2,07.11.18,12:30 - 15:30,success,Theresa Breitner,tbreitner@uos.de,19,right,$,yes,female,S,Amp 1
+207,1,08.11.18,14:00 - 16:45,success,Lara McDonald,lmcdonald@uos.de,18,right,VP,yes,female,S,Amp 2
+207,2,08.11.18,14:00 - 16:45,success,Fabrizia Martinet,fmartinet@uos.de,25,right,$,yes,female,M non-green,Amp 1
+208,1,09.11.18,14:00 - 16:45,success,Sarah Greb,sgreb@uos.de,21,right,$,yes,female,M green,Amp 2
+208,2,09.11.18,14:00 - 16:45,success,Maximilian Häming,mhaeming@uos.de,19,right,VP,yes,male,L,Amp 1
+209,1,12.11.18,13:00 - 17:00,success,Nora Maleki,nmaleki@uos.de,32,right,VP,yes,female,S,Amp 1
+209,2,12.11.18,13:00 - 17:00,success,Hanna Lamowski,hlamowski@uos.de,21,right,$,yes,female,M green,Amp 2
+210,1,13.11.18,13:00 - 16:00,triggers gone after block 2,Maria Windler,,23,right,VP,yes,female,S,Amp 2
+210,2,13.11.18,13:00 - 16:00,triggers gone after block 2,Inga Ibs,iibs@uos.de,25,right,$,yes,female,M non-green,Amp 1
+211,1,14.11.18,13:00 - 16:00,success,Elena Giacomazzi,egiacomazzi@uos.de,21,right,$,yes,female,M green,Amp 2
+211,2,14.11.18,13:00 - 16:00,success,Lina Lazik,llazik@uos.de,19,right,VP,yes,female,S,Amp 1
+212,1,15.11.18,09:00 -12:40,success,Saskia Bruhn,saskiabruhn95@gmail.com,23,right,$,yes,female,M green,Amp 2
+212,2,15.11.18,09:00 - 12:40,success,Alison Hermann,alhermann@uso.de,19,right,VP,yes,female,S,Amp 1
+213,1,15.11.18,14:00 - 16:15,triggers gone after block 1,Jasmin Walter,jawalter@uos.de,25,right,VP,yes,female,S,Amp 2
+213,2,15.11.18,14:00 - 16:15,triggers gone after block 1,Mara Rehmer,mara.rehmer@gmail.com,20,right,$,yes,female,M green,Amp 1
+214,1,15.11.18,09:00,experiment failed,Marilena Zitka,marilena.zitka@googlemail.com,26,right,$,yes,female,S,Amp 2
+214,1,15.11.18,09:00,experiment failed,Rosa Großmann,rgrossmann@uos.de,20,right,VP,yes,female,M green,Amp 1
