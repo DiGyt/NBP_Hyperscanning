@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-############# EEG-Preprocessing Script (Python_MNE toolbox) ##############
+############ EEG-Preprocessing Script (Python_MNE toolbox) ##############
 # Credits:
 # Pernet, C. R., Appelhoff, S., Flandin, G., Phillips, C., Delorme, A., &
 # Oostenveld, R. (2018, December 6). BIDS-EEG: an extension to the Brain
