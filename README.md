@@ -3,7 +3,6 @@ Code for the IKW Osnabrücks's 2019/20 Hyperscanning study project.
 
 
 
-<br/><br/><br/><br/>
-
+<br/><br/><br/><br/><br/><br/>
 # Wiki
 Important notes on the Repository and handling the Code.
