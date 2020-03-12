@@ -14,5 +14,5 @@ Make sure to only directly edit stuff in your own branches, never directly into 
 
 # 1. Hello
 
-## &ensp; 1.1 Hello
+## ~ 1.1 Hello
 ##      1.2 introduction
