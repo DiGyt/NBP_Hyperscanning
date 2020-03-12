@@ -10,9 +10,3 @@ Important notes on the Repository and handling the Code.
 
 ### Working on the branches
 Make sure to only directly edit stuff in your own branches, never directly into the master branch.
-
-
-# 1. Hello
-
-## ~ 1.1 Hello
-##      1.2 introduction
