@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import pygame
 
-###TEST 
 ######################################
 # create a data subfolder for log-data
 ######################################
