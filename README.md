@@ -121,15 +121,15 @@ the most important commands you will need during the process.
     push your local branch `my_new_branch`, the local changes will be added to the online 
     version of `my_new_branch` (or the entire branch added if it doesn't exist yet).
     ```shell script
-    $ git pull origin
+    $ git push origin my_new_branch
     ```
+    
+    Usually if you're working on a branch that is already present in the remote repository, 
+    simply writing `git pull` or `git push` will suffice.
   
-- ##### Push
-    Commiting broadly means "saving" the progress you made on a specific branch. When 
-    you commit a file, your current branch will save all the changes you made to this 
-    file. This is a neccessary step you need to take before *pushing* (~uploading) your 
-    progress to the online repository. While working on a specific branch, you can 
-    commit edited files to that branch with:
+- ##### Merging
+    When all the work is done in your branch and you want to merge the code in this branch 
+    into another branch, use `merge`. You can merge from your computer into the different 
     ```shell script
-    $ git commit file_xy.py
+    $ git push origin my_new_branch
     ```
