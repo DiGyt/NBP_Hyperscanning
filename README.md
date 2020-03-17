@@ -129,7 +129,20 @@ the most important commands you will need during the process.
   
 - ##### Merging
     When all the work is done in your branch and you want to merge the code in this branch 
-    into another branch, use `merge`. You can merge from your computer into the different 
+    into another branch, use `merge`. When merging, it is good advice to perform `git pull` 
+    on each branch first to make sure that your branches are up-to-date with their remote 
+    counterparts.
     ```shell script
-    $ git push origin my_new_branch
+    $ git checkout branch_to_merge_in
+    $ git merge my_new_branch
     ```
+    Please **do not merge into the master branch** directly. Instead, you can open a "Pull 
+    Request", which basically is an online form or proposal to merge one branch into the 
+    master (or any other) branch. With this method, other contributors are able to check 
+    your code and validate if it is ready to be merged into the master branch.
+    If you want to merge into the master branch, go to the 
+    [Repository](https://github.com/DiGyt/NBP_Hyperscanning), then click on 
+    [Pull Requests](https://github.com/DiGyt/NBP_Hyperscanning/pulls) and on 
+    [New pull request](https://github.com/DiGyt/NBP_Hyperscanning/compare).
+    Now you can choose which branch to merge into which branch and submit your pull 
+    request.
