@@ -8,5 +8,89 @@ Code for the IKW Osnabrücks's 2019/20 Hyperscanning study project.
 Important notes on the Repository and handling the Code.
 
 
-### Working on the branches
-Make sure to only directly edit stuff in your own branches, never directly into the master branch.
+### Working with git and GitHub
+GitHub can make our lives working on the project significantly easier.
+It allows us to keep all our code online in one place, while being able to 
+easily work on different parts of it and collaborate with other people.
+
+
+#### Branches
+The idea of "branching up" the project repository is an important aspect of
+working with GitHub, and will allow us to seamlessly integrate code that was 
+independently developed by different people for different tasks.
+
+When we create a new "Branch" of our GitHub repository, you can imagine this 
+as if we would create a new copy of the entire repository. In this new "copy" 
+of the code, you can try stuff, mess around, and write new code aiming to 
+add new functionality to our repository.
+
+This also means that we need to have one big main branch, which is the starting 
+point for the other branches and also can be seen as the current total working 
+version of our code. This branch is called the **master branch** in GitHub. 
+Since this branch is our main point of reference, you should pretty much 
+**never edit the master branch directly** while working on the repository.
+
+
+### The general workflow explained
+Instead of directly changing the code saved in our master branch,
+the usual working procedure goes as follows:
+
+1. **Branch**: You create a new branch for a specific task or to try out new things.
+2. **Edit**: You edit **your branch** as you like it.
+3. **Merge**: If you think that your code is working and should be integrated into 
+    the master branch, you first check that your branch is compatible with the current 
+    master branch. This process is called *merging*. It may be that while you worked on 
+    your own branch, someone else *pushed* a *commit* to the master branch, which means 
+    that the code you got at the moment does not include the changes the other person 
+    contributed to the master branch.
+     
+    During the *merging* process you go through the 
+    code and check if there are no conflicts between your branch and the master branch, 
+    and that the resulting code will be good to go and work fine, as it will be used as 
+    the common reference point for all contributors from this point. This sounds 
+    scarier than it actually is. Most of the time, you won't face any problems while 
+    merging. However, there is the potential to seriously mess up the code and generally 
+    it is a good idea to relay the merging process to more experienced users if you're 
+    not that familiar with the code and/or GitHub.
+
+
+### Introduction into the working process
+In the following, you can read a short introduction into the general GitHub workflow and
+the most important commands you will need during the process.
+
+- ##### Clone the repository
+    First you "clone" the repo. This means you create a physical copy of the online GitHub
+    code on your laptop.
+    For this purpose, you open your computer's command line. Then you direct to the folder 
+    where you want to store the repository:
+    ```shell script
+    $ cd /path/to/repository
+    ```
+    Then you clone the repository, using the URL provided from our repository's page:
+    ```shell script
+    $ git clone https://github.com/DiGyt/NBP_Hyperscanning.git
+    ```
+    Now you got a full copy of the repository in the respective folder.
+    
+- ##### Create a new branch
+    Now you create a new branch where you can work on and change stuff.
+    ```shell script
+    $ git branch my_new_branch
+    ```
+  
+- ##### Switch branches
+    Before you start coding, you must switch to the branch you want to edit. This is 
+    important, as it can happen that you accidentally edit the master (or some other) 
+    branch that you do not want to edit. You can use the `checkout` command to switch
+    between branches.
+    ```shell script
+    $ git checkout my_new_branch
+    ```
+    Now you can edit your new branch. With `git checkout`, you can flexibly switch 
+    between different branches while developing, for example when you're working on
+    different tasks at the same time. However, it is good advice to "save" your commits 
+    to each branch, before switching to another (as explained in the next step).
+    
+- ##### Commit
+    Commiting broadly means "saving" the progress you made on a specific branch. When 
+    you 
