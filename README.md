@@ -103,10 +103,26 @@ the most important commands you will need during the process.
     After running the command, you can add a commit message to state which changes you 
     undertook in the respective commit.
   
-- ##### Pulling
-    You 
+- ##### Pulling and Pushing
+    In order to synchronize the code between the repository cloned locally on your computer 
+    and the remote repository on GitHub, you need commands to exchange between both. There 
+    are two commands to do this, which are `pull` and `push`.
+    
+    Pulling means that you get the code from the remote repository, and fill it into your 
+    locally saved repository clone. This makes sure that your code is up-to-date with the 
+    remote repository and generally should be done often.
     ```shell script
-    $ git commit file_xy.py
+    $ git pull origin
+    ```
+  
+    Pushing means that you take the (edited) code from your locally cloned repository, 
+    and add it to the remote/online GitHub repository. When you push, all changes made 
+    to a local branch will be added to the respective remote branch. This means when you 
+    push your local branch `my_new_branch`, the local changes will be added to the online 
+    version of `my_new_branch` (or the entire branch added if it doesn't exist yet).
+    ```shell script
+    $ git pull origin
+    ```
   
 - ##### Push
     Commiting broadly means "saving" the progress you made on a specific branch. When 
