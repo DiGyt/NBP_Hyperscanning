@@ -93,4 +93,27 @@ the most important commands you will need during the process.
     
 - ##### Commit
     Commiting broadly means "saving" the progress you made on a specific branch. When 
-    you 
+    you commit a file, your current branch will save all the changes you made to this 
+    file. This is a neccessary step you need to take before *pushing* (~uploading) your 
+    progress to the online repository. While working on a specific branch, you can 
+    commit edited files to that branch with:
+    ```shell script
+    $ git commit file_xy.py
+    ```
+    After running the command, you can add a commit message to state which changes you 
+    undertook in the respective commit.
+  
+- ##### Pulling
+    You 
+    ```shell script
+    $ git commit file_xy.py
+  
+- ##### Push
+    Commiting broadly means "saving" the progress you made on a specific branch. When 
+    you commit a file, your current branch will save all the changes you made to this 
+    file. This is a neccessary step you need to take before *pushing* (~uploading) your 
+    progress to the online repository. While working on a specific branch, you can 
+    commit edited files to that branch with:
+    ```shell script
+    $ git commit file_xy.py
+    ```
