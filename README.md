@@ -112,7 +112,7 @@ the most important commands you will need during the process.
     locally saved repository clone. This makes sure that your code is up-to-date with the 
     remote repository and generally should be done often.
     ```shell script
-    $ git pull origin
+    $ git pull origin my_new_branch
     ```
   
     Pushing means that you take the (edited) code from your locally cloned repository, 
