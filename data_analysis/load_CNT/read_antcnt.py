@@ -203,7 +203,6 @@ class RawANTCNT(BaseRaw):
         #basedir = op.dirname(input_fname)
 
         eeg= libeep.read_cnt(input_fname)
-        print("HERES THE SUPPOSED THING: ", eeg)
         last_samps = [eeg.get_sample_count() - 1]
         info = _get_info(eeg, montage, eog=eog)
 
