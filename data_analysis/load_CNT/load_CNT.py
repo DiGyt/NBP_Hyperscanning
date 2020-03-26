@@ -14,36 +14,39 @@ Created on June 19, 2019
 
 import os, sys
 # make sure "read_antcnt.py" is in your pythonpath
-home = os.path.expanduser('~')
-sys.path.append('/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/load_CNT/')
-os.chdir(home + '/hyperscanning/hyperscanning-2.0/load_CNT/')
 # print(sys.path)
-import libeep
+# import libeep
 import numpy as np
 import mne
-import read_antcnt
+
+from read_antcnt import read_raw_antcnt
 # from matplotlib import pyplot as plt
 
 
-#
-# make directory to save the raw data in MNE_BIDS compatible 'sourcedata' folder
-#
-raw_files = os.path.join(home,'/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/mne_data/sourcedata')
+# define the path to your cnt files
+# CHANGE THIS PATH TO THE PLACE WHERE YOU SAVED THE CNT FILES
+# THIS SHOULD BE EVERYTHING YOU NEED TO ADAPT TO MAKE THIS WORK
+path_to_cnt = "/home/dirk/PycharmProjects/NBP_Hyperscanning/data_cnt"
+
+# initialize the other paths
+cur_path = os.path.dirname(__file__)
+raw_files = os.path.join(cur_path, "..", "..", "data")
+
+# if the raw_files folder doesn't exist, we create one
 if not os.path.exists(raw_files):
     os.makedirs(raw_files)
-# mne.sys_info()
 
-# set current working directory
-os.chdir('/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/')
 
 #
 # iterate over raw eeg-files of each subject and save in MNE compatible .fif format
 #
-sub_list =  ['202','203','204','205','206','207','208','209','211','212']
+sub_list =  ["202"] # ['202','203','204','205','206','207','208','209','211','212']
 for i in (sub_list):
-    path_to_cnt = '/net/store/nbp/projects/hyperscanning/EEG_data/sub%s/sub%s.cnt' %(i,i)
+    path_to_cnt = os.path.join(path_to_cnt, "sub{}".format(i), "sub{}.cnt".format(i))
+
     # load the .cnt data with read_antcnt.py script
-    raw = read_antcnt.read_raw_antcnt(path_to_cnt, preload = False)
+    raw = read_raw_antcnt(path_to_cnt, preload = False)
+    break
     # apply specific NBP channel settings
     raw.set_channel_types({ch:'misc' for ch in raw.ch_names if (ch.find('AUX')==0) | (ch.find('BIP')==0)})
     # save mne data in .fif format

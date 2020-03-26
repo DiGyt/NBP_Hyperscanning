@@ -24,7 +24,7 @@ from mne.utils import logger, verbose, warn
 #from ...epochs import _BaseEpochs
 #from ...event import read_events
 #from ...externals.six import string_types
-from mne.externals.six import string_types
+from six import string_types
 
 CAL = 1e-6
 
@@ -52,7 +52,7 @@ def _get_info(eeg, montage, eog=()):
     # add the ch_names and info['chs'][idx]['loc']
 
     ch_names =[eeg.get_channel(i)[0] for i in range(eeg.get_channel_count())]
-    print ch_names
+    print(ch_names)
 
     #elif isinstance(montage, string_types):
     #    path = op.dirname(montage)
@@ -201,8 +201,9 @@ class RawANTCNT(BaseRaw):
         #from scipy import io
         import libeep
         #basedir = op.dirname(input_fname)
-        eeg= libeep.read_cnt(input_fname)
 
+        eeg= libeep.read_cnt(input_fname)
+        print("HERES THE SUPPOSED THING: ", eeg)
         last_samps = [eeg.get_sample_count() - 1]
         info = _get_info(eeg, montage, eog=eog)
 
