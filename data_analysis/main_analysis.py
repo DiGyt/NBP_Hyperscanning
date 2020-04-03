@@ -1,4 +1,6 @@
 # Here we got the entire analysis in one file.
+# This is only how it could look. Maybe we could instead do the data cleaning
+# and ICA in another file.
 
 
 import os.path as op
