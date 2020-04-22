@@ -1,3 +1,3 @@
-from .preprocessing_functions import *
-from .graph_measure_functions import *
-from .connectivity_measure_functions import *
+from .functions_preprocessing import *
+from .functions_graph_theory import *
+from .functions_connectivity import *

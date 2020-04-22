@@ -84,7 +84,8 @@ def combine_raws(raw_1, raw_2):
     return raw_1
 
 
-def mark_bads_and_save(raw, subj_id, sensor_map=False, **plot_kwargs):
+def mark_bads_and_save(raw, subj_id, sensor_map=False,
+                       block=True, **plot_kwargs):
     """Plots the data, and saves marked bad channels/segments."""
 
     bad_ch_path = op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv")
@@ -94,7 +95,8 @@ def mark_bads_and_save(raw, subj_id, sensor_map=False, **plot_kwargs):
     if op.isfile(bad_ch_path):
         print("Loading preexisting marked channels\n"
               "Additionally marked channels will be added to file.")
-        raw.info["bads"] = load_bad_channels(subj_id)
+        raw.load_bad_channels(op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv"))
+
     if op.isfile(bad_seg_path):
         print("Loading preexisting marked segments\n"
               "Additionally marked segments will be added to file.")
@@ -119,7 +121,7 @@ def mark_bads_and_save(raw, subj_id, sensor_map=False, **plot_kwargs):
     # plot the data
     if sensor_map:
         raw.plot_sensors(kind='3d', ch_type='eeg', ch_groups='position')
-    raw.plot(block=True, **plot_kwargs)
+    raw.plot(block=block, **plot_kwargs)
 
 
     # save the bad channels and bad segments
@@ -129,7 +131,7 @@ def mark_bads_and_save(raw, subj_id, sensor_map=False, **plot_kwargs):
 # TODO: Make sure that we use ICA to the full extend
 # more information here: https://mne.tools/stable/auto_tutorials/preprocessing/plot_40_artifact_correction_ica.html
 # Scrap this function if it does not seem helpful
-def run_ica_and_save(raw, subj_id, **ica_kwargs):
+def run_ica_and_save(raw, subj_id, block=True, **ica_kwargs):
     """Runs an ICA, lets the user pick out bad Components and saves them."""
     ica_path = op.join(BAD_COMP_PATH, subj_id + "-ica.fif")
 
@@ -150,7 +152,7 @@ def run_ica_and_save(raw, subj_id, **ica_kwargs):
     print("Opening ICA component plot. Close the plot for further options.\n"
           "You will be able to show it again later.")
     ica.plot_components()
-    plt.show(block=True)
+    plt.show(block=block)
 
     inp = None
     while inp not in ("save", "s", "quit", "q"):
@@ -158,7 +160,7 @@ def run_ica_and_save(raw, subj_id, **ica_kwargs):
         inp = input("If you want to exclude one component, type e + the "
                     "number of component you want to exclude (e.g. e15).\n"
                     "If you want to closer inspect one component, type i + "
-                    "the number of component you want to inspect (e.g. i3).!!! NOTE: THIS CRASHES IF YOU PLOT DATA WITH MARKED SEGMENTS. LOOKS LIKE A BUG\n"
+                    "the number of component you want to inspect (e.g. i3).\n"
                     "If you want to show the components plot again, type "
                     "'plot' or 'p'.\n"
                     "If you want to save the ICA and quit the function, type "
@@ -177,12 +179,12 @@ def run_ica_and_save(raw, subj_id, **ica_kwargs):
             print("Opening ICA property plot. Close the plot for further "
                   "options.\nYou will be able to show it again later.")
             ica.plot_properties(raw, picks=[int(inp[1:])], reject=None)
-            plt.show(block=True)
+            plt.show(block=block)
         elif inp in ("plot", "p"):
             print("Opening ICA component plot. Close the plot for further "
                   "options.\nYou will be able to show it again later.")
             ica.plot_components()
-            plt.show(block=True)
+            plt.show(block=block)
 
     if inp in ("save", "s"):
         ica.save(ica_path)
@@ -201,11 +203,10 @@ def preprocess_single_sub(raw, subj_id):
 
     # Apply high pass/low pass filter
     raw.filter(l_freq = 0.1, h_freq = 120) # using firwin
-    # TODO: include bandstop for the power line noise
-    # TODO: note that MNE recommends a 1 Hz highpass for ICA
+    raw.notch_filter(freqs=[16.666666667, 50])  # bandstop train and AC
 
     # mark the bad channels
-    raw.info["bads"] = load_bad_channels(subj_id)
+    raw.load_bad_channels(op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv"))
 
     # add the bad segments to the annotations
     annots_path = op.join(BAD_SEG_PATH, subj_id + "-annot.csv")
@@ -239,12 +240,6 @@ def preprocess_single_sub(raw, subj_id):
 def save_bad_channels(raw, subj_id):
     save_path = op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv")
     np.savetxt(save_path, raw.info["bads"], delimiter=",", fmt='%s')
-
-
-def load_bad_channels(subj_id):
-    load_path = op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv")
-    bad_channels = np.loadtxt(load_path, delimiter=",", dtype=str)
-    return bad_channels.tolist()
 
 
 # UNUSED FUNCTIONS
@@ -288,3 +283,10 @@ def create_montage(raw, elp_montage_path):
     montage = mne.channels.make_dig_montage(ch_pos, nasion, lpa, rpa)
 
     return montage
+
+
+def load_bad_channels(subj_id):
+    load_path = op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv")
+    bad_channels = np.loadtxt(load_path, delimiter=",", dtype=str, ndmin=1)
+    print(bad_channels.tolist(), bad_channels, np.array(bad_channels))
+    return bad_channels.tolist()

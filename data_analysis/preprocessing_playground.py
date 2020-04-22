@@ -7,11 +7,11 @@ import os.path as op
 
 import mne
 
-from data_analysis.graph_measure_functions import \
+from data_analysis.functions_graph_theory import \
     weighted_small_world_coeff
-from data_analysis.connectivity_measure_functions import \
+from data_analysis.functions_connectivity import \
     full_ispc
-from data_analysis.preprocessing_functions import \
+from data_analysis.functions_preprocessing import \
     (combine_raws, split_raws, preprocess_single_sub, mark_bads_and_save,
      run_ica_and_save, BAD_COMP_PATH)
 
@@ -38,18 +38,28 @@ for sub_index, raw in enumerate([sub1_raw, sub2_raw]):
 
     # Apply high pass/low pass filter
     raw.filter(l_freq = 0.1, h_freq = 120) # using firwin
-    # TODO: include bandstop for the power line noise
-    # TODO: note that MNE recommends a 1 Hz highpass for ICA
+    raw.notch_filter(freqs=[16.666666667, 50])  # bandstop the train and power grid
 
     # set the EEG Montage. We use 64 chans from the standard 10-05 system.
     montage = mne.channels.make_standard_montage("standard_1005")
     raw.set_montage(montage)
 
-    # clean the data
-    mark_bads_and_save(raw, subj_id, sensor_map=True)
+    # mark the channels and save them
+    # try block == False if you have problems with plotting
+    mark_bads_and_save(raw, subj_id, sensor_map=True,
+                       block=True)
 
-    # perform ICA
-    run_ica_and_save(raw, subj_id, n_components=25, method="fastica")
+    raw.filter(l_freq=2, h_freq=None)  # filter again for ICA
+
+    # we should either remove or ignore our annotations before ICA
+    # Else, we cannot view single components
+    # Don't worry, however. Al marked segments are already saved
+    raw.set_annotations(None)
+
+    # run the ICA and save the marked components
+    # try block == False if you have problems with plotting
+    run_ica_and_save(raw, subj_id, block=True,
+                     n_components=25, method="fastica")
 
     # load the bad channels
     #raw.info["bads"] = load_bad_channels(subj_id)
