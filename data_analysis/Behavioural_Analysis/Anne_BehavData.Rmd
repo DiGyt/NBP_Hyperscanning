@@ -1,0 +1,361 @@
+---
+title: "Behavioral Data Analysis Anne"
+output: html_notebook
+---
+### Hyperscanning Project  
+>#### Is the synchronization performance correlated with the Leader-Follower dynamics of the dyads?
+
+Load libraries
+```{r}
+library(ggplot2)
+library(Rmisc)
+library(dplyr)
+library(knitr)
+library(grid)
+library(directlabels)
+knitr::opts_knit$set(root.diyr = '~/behavioral_data/R')
+
+# load file with functions
+source("Anne_BehavData_Functions_11.R")
+```
+**Step 1:** Create data frame of all behavioral csv  
+(*the preparatory period of 3s is substracted from the tapping times (vector called ttap3*)
+```{r}
+# create a list of all file names
+/Users/anne/Documents/Documents_extended/Thesis/Behavioral Analysis/behavioral_data
+file_list <-  list.files(pattern="*.csv")
+file_names <- substring(file_list, 1,3)
+
+# read in all files and bind them row-wise into one df
+data <- do.call("rbind",lapply(file_list, read.csv))
+head(data)
+
+#compute real tapping-times (substract first 3s from all time points)
+for (i in 1:length(data$ttap)) {
+  data$ttap3[i] = data$ttap[i] - 3.0
+}
+```
+####Call the functions used to analyse the behavioral data   
+
+**Step 2:** Reject all the trials that are not synchronous: *all trials where tap~i of sub~1~ is not the closest to tap~i~ of sub~2~ had to be removed. These non-synchronous trails would otherwise distort the results of the following analysis.*  
+```{r}
+data <- SynchTrials(data)
+```
+**Step 3:** Count the trials that have been rejected  
+*Result: df with number of total trials, total and relative number of left over trials)* 
+```{r}
+LeftTrials <- CountLeftTrials(data)
+pair_names <- LeftTrials$pair
+```
+**Step 4:** Compute inter-tap intervals (ITI) between the taps of all subjects  
+*(ITI = interval between the taps for one subject, Result: df with two columns of ITIsub~1~ and ITIsub~2~)*  
+```{r}
+ITI <- ComputeITI(data)
+```
+**Step 5:** Compute Delta between all taps of all trials  
+*(Delta = distance between tap~i~ of sub~1~ and sub~2~, Result: df with two columns of DeltaTap~i~ and DeltaTap~i+1~)*  
+*(if delta is negative: sub~1~ is leading, if positive: sub~2~ is leading)*
+```{r}
+Delta <- ComputeDelta(data)
+
+#________PLOT ALL PAIRS and SAVE_________#
+# Create and save Density Plots of Δ[i] and Δ[i+1] pair-wise
+# pairs with less than 300 trails removed!!!!
+
+for(p in pair_names){
+# extract data of the pair from the Delta data frame
+plotPair <- Delta[Delta$pair == p,]
+plotPair[] <- lapply(plotPair, function(x) as.numeric(as.character(x)))#
+
+# create a filepath where to save the plot
+mypath <- file.path("Delta_density")
+to_string <- as_labeller(c(`1`="Tap 1", `2`="Tap 2",`3`="Tap 3",`4`="Tap 4",`5`="Tap 5",`6`="Tap 6",`7`="Tap 7",`8`="Tap 8"))
+
+# create plot:
+ggplot(plotPair, aes(x=delta, y=delta1)) + geom_point(size = 0.3) +  labs(title = (sprintf("Delta[i] and Delta[i+1] of Pair %s \n", p)), col="Tapnr" ) + coord_fixed() + labs(fill = "Density") +
+geom_vline(xintercept = 0, color = "yellow", size = 1.0) + geom_hline(yintercept = 0, color = "yellow", size = 1.0) +
+scale_x_continuous(name =  "delta[i]", limits= c(-0.4, 0.4), breaks = seq(-0.4, 0.4, by = 0.2)) + scale_y_continuous(name = "delta[i+1]", limits= c(-0.4, 0.4), breaks = seq(-0.4, 0.4, 0.2)) + 
+theme(panel.grid = element_line(colour = "grey"))+
+theme(panel.background = element_rect(fill = "white", colour = "grey50")) +
+theme(plot.title = element_text(size = 20, hjust=.5, face="bold"), axis.title.x = element_text(size=20), axis.title.y = element_text(size=20, angle=90), axis.text = element_text(size=15), strip.text = element_text(size=15, face = "bold", margin = margin(2,0,2,0, "mm")), legend.text = element_text(size=15), legend.title = element_text(size=15), legend.key.size = unit(1.0, "cm")) + facet_wrap( ~ tapnr, labeller = to_string) + 
+stat_density_2d(aes(fill = stat(level)), breaks=seq(0,160,by=20), geom = "polygon") +  scale_fill_viridis_c() +
+scale_alpha_continuous(limits=c(0,160)) + scale_fill_distiller(palette= "Spectral", direction=-1) +
+geom_label(aes(x = 0.2, y = 0.4, label = "Sub2 leads"), label.padding = unit(2, "mm"), color="black") +
+geom_label(aes(x = -0.2, y = -0.4, label = "Sub1 leads"), label.padding = unit(2, "mm"), color="black")
+  
+
+#save plot as pdf
+ggsave(filename = paste("DeltaLabelled_", p, ".pdf", sep = ""), path = mypath, scale = 1,width=15, height=15, dpi=600)
+}
+```
+**Step 6:** Compute Cross-Correlation ITIsub~1~ and ITIsub~2~ (without Windows!)
+```{r}
+
+CCF <- ComputeCCF(ITI)
+# take absolute ccf-values 
+CCF$value <- abs(CCF$value)
+# average over trials: per block 9 ccf values (lag -4:4)
+sumCCF <- SumCCF(CCF)
+
+# compute crosscorrelation without absolute values
+relCCF <- ComputeCCF(ITI) 
+relsumCCF<- SumCCF(relCCF)
+
+
+#_____ PLOT 12 blocks per pair, CCF at all lags_____#
+  
+for(p in pair_names){
+    
+CCFPair <- sumCCF[sumCCF$pair == p,]
+    
+  # for better block labelling
+  to_string2 <- as_labeller(c(`1`="Block 1", `2`="Block 2",`3`="Block 3",`4`="Block 4",`5`="Block 5",`6`="Block 6",`7`="Block 7",`8`="Block 8",`9`="Block 9",`10`="Block 10",`11`="Block 11",`12`="Block 12"))
+    
+ggplot(CCFPair, aes(x=CCFPair$lags, y=CCFPair$value)) + geom_col(width=0.2) + facet_wrap(~ block, labeller = labeller(block = to_string2)) + scale_x_continuous(name = "Lags", limits= c(-4.5, 4.5), breaks = seq(-4, 4, by = 1.0)) + scale_y_continuous(name = "CCF", limits= c(0, 0.85)) + labs(title = sprintf("Block-wise average of CCF-Values (Pair %s)\n", p)) + theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7), legend.key.size = unit(0.3, "cm")) 
+   
+ mypath <- file.path("CCF")
+    
+  #save plot as jpg
+  ggsave(filename = paste("CCF_fullTrial", p, ".pdf", sep = ""), path = mypath, scale = 1,width=8, height=8, dpi=600)
+}
+
+#_____ PLOT only CCF at lag -1/0/1 (one plot each pair) _____#
+
+Lags101rel <- relsumCCF[relsumCCF$lags == -1 | relsumCCF$lags == 0 | relsumCCF$lags == 1,]
+  
+for(p in pair_names){
+
+# use Lags101rel not to use the absolute CCF values and: scale_y_continuous(name = "CCF", limits= c(-0.65, 0.65)) 
+CCFPair <- Lags101[Lags101$pair == p,]
+    
+# for better block labelling
+to_string2 <- as_labeller(c(`1`="Block 1", `2`="Block 2",`3`="Block 3",`4`="Block 4",`5`="Block 5",`6`="Block 6",`7`="Block 7",`8`="Block 8",`9`="Block 9",`10`="Block 10",`11`="Block 11",`12`="Block 12"))
+    
+ggplot(CCFPair, aes(x=CCFPair$lags, y=CCFPair$value, fill = CCFPair$lags)) + geom_bar(stat="identity", width = 0.2) + facet_wrap(~ block, labeller = labeller(block = to_string2)) + scale_x_continuous(name = "Lags", limits= c(-1.5, 1.5), breaks = seq(-1, 1, by = 1.0)) + scale_y_continuous(name = "CCF", limits= c(0, 0.65)) + labs(title = sprintf("Block-wise average of CCF-Values (Pair %s)\n", p)) + geom_hline(yintercept = 0, color = "yellow", size = 0.4) + theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.position = "none")
+
+   
+mypath <- file.path("CCF")
+    
+#save plot as pdf
+ggsave(filename = paste("CCF101_", p, ".pdf", sep = ""), path = mypath, scale = 1,width=8, height=8, dpi=600)
+}
+
+#_____ Plot average CCF at lag (-1,0,1) for each pair (all pairs as facet) _____#
+
+# use this for not-absolute values
+# scale_y_continuous(name = "CCF", limits= c(-0.6, 0.6))
+sumLags101rel <- summarySE(data = Lags101rel, measurevar = "value", groupvars = c("pair","lags"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+
+# use this to plot absolute values
+# scale_y_continuous(name = "CCF", limits= c(0, 0.6))
+sumLags101 <- summarySE(data = Lags101, measurevar = "value", groupvars = c("pair","lags"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+
+ggplot(sumLags101, aes(x=sumLags101$lags, y=sumLags101$value, fill = sumLags101$lags)) + geom_bar(stat="identity", width = 0.2) + facet_wrap(~ pair) + scale_x_continuous(name = "Lags", limits= c(-1.5, 1.5)) + scale_y_continuous(name = "CCF", limits= c(0, 0.6)) + labs(title ="Total average of CCF-Values") + geom_hline(yintercept = 0, color = "yellow", size = 0.4) + theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7), legend.key.size = unit(0.3, "cm"), legend.position = "none")
+
+ggsave(filename = paste("CCF101_all", ".pdf", sep = ""), path = mypath, scale = 1,width=8, height=8, dpi=600)
+
+
+```
+**Step 7:** Compute Synchronization Measure (alpha)  
+Check whether Leader-Follower dynamics correlate with synchronization performance:  
+Plot lag -1/ lag 1/ lag 0 correlation values against the alpha measure
+
+Synchronization Index (from Novembre, 2017)  
+- alpha = alpha measure (range [0:360])  
+- alpha_lin = linearized alpha (range[0:180])  
+```{r}
+Alpha <- ComputeAlpha(data) 
+
+# append alpha results to ITI df
+ITI$alpha <- Alpha$alpha_lin
+
+#average over taps (8 alpha values per block)
+sumAlpha <- SumAlpha(Alpha)
+
+#________PLOT SYNCH. MEASURE OF ALL PAIRS_________#
+# Graph similar to Max's one 
+# (Tap one exluded for better visualization. 
+# To inlcude first tap: scale_y_continuous(name = "Alpha", limits= c(10, 130), breaks = seq(10, 130, by = 10)))
+
+ggplot(sumAlpha, aes(x=sumAlpha$tapnr, y=sumAlpha$alpha_lin, color = factor(pair))) + geom_point()+  geom_line(size=.5, alpha=.5, na.rm=TRUE) +scale_x_continuous(name = "Tapnr", limits= c(1, 8.5), breaks = seq(1, 8.5, by = 1))  +
+scale_y_continuous(name = "Alpha", limits= c(10, 60), breaks = seq(10, 60, by = 10)) +  
+labs(title = sprintf("Tap-wise average of alpha values (synchronization measure)\n"), col="Pair") + 
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=7), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7)) + geom_dl(aes(label = pair), method = list(dl.trans(x = x + 0.2), "last.points", cex = 0.5))
+
+#save plot as pdf
+mypath <- file.path("Alpha")
+ggsave(filename = paste("TapwiseAvgAlpha_exTap1", ".pdf", sep = ""), path = mypath, scale = 1,width=10, height=7, dpi=600)
+
+#_____Average alpha values over blocks & PLOT________#
+sumAlphaBlock <- summarySE(data = ITI, measurevar = "alpha", groupvars = c("pair","block"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+
+ggplot(sumAlphaBlock, aes(x=sumAlphaBlock$block, y=sumAlphaBlock$alpha, color = factor(pair))) + geom_point()+  geom_line(size=.5, alpha=.5, na.rm=TRUE) +scale_x_continuous(name = "Block", limits= c(1, 12), breaks = seq(1, 12, by = 1))  +
+scale_y_continuous(name = "Alpha", limits= c(20,85), breaks = seq(20, 85, by = 20)) +  
+labs(title = sprintf("Block-wise average of alpha values (synchronization measure)\n"), col="Pair") + 
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=7), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7)) + geom_dl(aes(label = pair), method = list(dl.trans(x = x + 0.2), "last.points", cex = 0.5))
+  
+#save plot as pdf
+mypath <- file.path("Alpha")
+ggsave(filename = paste("BlockwiseAvgAlpha", ".pdf", sep = ""), path = mypath, scale = 1,width=10, height=7, dpi=600)
+
+```
+**Plot Mean Tapping Frequency**  
+- (ITI) of each pair for all blocks  
+- sub1 and sub2 separately, but graphs look very similar
+```{r}
+
+sumITIsub1 <- summarySE(data = ITI, measurevar = "inter_tap1", groupvars = c("pair", "block"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+sumITIsub2 <- summarySE(data = ITI, measurevar = "inter_tap2", groupvars = c("pair", "block"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+
+#________Plot Sub1 ________#
+ggplot(sumITIsub1, aes(x=sumITIsub1$block, y=sumITIsub1$inter_tap1, color = factor(pair))) + geom_point()+  geom_line(size=.5, alpha=.5, na.rm=TRUE) +scale_x_continuous(name = "Block", limits= c(1, 12), breaks = seq(1, 12, by = 1))  +
+scale_y_continuous(name = "ITI Sub1", limits= c(0.2, 1.1), breaks = seq(0.2, 1.1, by = 0.1)) +  
+labs(title = sprintf("Block-wise average of Intertap Intervall of Sub1 \n"), col="Pair") + 
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7)) + geom_dl(aes(label = pair), method = list(dl.trans(x = x + 0.2), "last.points", cex = 0.5)) + geom_hline(yintercept = 0.5, color = "yellow", size = 0.7)
+
+mypath <- file.path("TappingFrequency")
+ggsave(filename = paste("MeanTappingFrequency_Sub1", ".pdf", sep = ""), path = mypath, scale = 1,width=10, height=7, dpi=600)
+
+#________ Plot Sub2 ________#
+ggplot(sumITIsub2, aes(x=sumITIsub2$block, y=sumITIsub2$inter_tap2, color = factor(pair))) + geom_point()+  geom_line(size=.5, alpha=.5, na.rm=TRUE) +scale_x_continuous(name = "Block", limits= c(1, 12), breaks = seq(1, 12, by = 1))  +
+scale_y_continuous(name = "ITI Sub1", limits= c(0.2, 1.1), breaks = seq(0.2, 1.1, by = 0.1)) +  
+labs(title = sprintf("Block-wise average of Intertap Intervall of Sub1 \n"), col="Pair") + 
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7)) + geom_hline(yintercept = 0.5, color = "yellow", size = 0.7)
+
+mypath <- file.path("TappingFrequency")
+ggsave(filename = paste("MeanTappingFrequency_Sub2", ".pdf", sep = ""), path = mypath, scale = 1,width=10, height=7, dpi=600)
+
+```
+####Study correlation between the synchronization peformance and the CCF results
+**Focus on Alpha and Lags (-1,0,1)** 
+To investigate leader – follower dynamics:  
+- pos. lag +1 correlation: Sub1 adapts  
+- pos. lag -1 correlation: Sub2 adapts  
+- neg. lag 0 correlation: Subjects are anti-correlated (each following the partner)  
+
+*(CCF withoud windows)*
+```{r}
+# select lags (-1,0,1) from CCF df (averaged over trials, 3 values per block)
+Lags101 <- sumCCF[sumCCF$lags == -1 | sumCCF$lags == 0 | sumCCF$lags == 1,]
+
+# average alpha values over blocks:  one alpha per block, 12 per pair
+sumITIBlock <- summarySE(data = ITI, measurevar = "alpha", groupvars = c("pair","block"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+
+#append alpha values to CCF(lag -1,0,1) df, same alpha for each lag
+Lags101$alpha <- rep(sumITIBlock$alpha,each = 3)
+
+#________ Plot all pairs within one plot & fit regression line ________#
+for (i in -1:1){
+   
+Lags101All <- Lags101[Lags101$lags == i,]
+
+### fit line to data with geom_smooth
+ggplot(Lags101All, aes(x=Lags101All$alpha, y=Lags101All$value)) + geom_point(size = 1.0) + scale_x_continuous(name = "Alpha", limits= c(20, 80), breaks = seq(20, 80, by = 10))  + scale_y_continuous(name = "CC coefficient values", limits= c(0.1, 0.8)) +
+labs(title = sprintf("Synchronization Measure and the Correlations at Lag %s", i), subtitle = "Without Windows! \n",col="Pair") +
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), plot.subtitle = element_text(size = 10, hjust=.5) ,axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7)) + geom_smooth( method = lm)
+
+mypath <- file.path("Alpha")
+
+ggsave(filename = paste("AlphaLag_fullTrialregression", i,".pdf", sep = ""), path = mypath, scale = 1,width=10, height=7, dpi=600)
+
+}
+
+#________  Facet (one plot for each pair) ________#
+for (i in -1:1){
+   
+Lags101All <- Lags101[Lags101$lags == i,]
+
+ggplot(Lags101All, aes(x=Lags101All$alpha, y=Lags101All$value, color = factor(pair))) + geom_point(size = 0.8)+ facet_wrap(~pair) + scale_x_continuous(name = "Alpha", limits= c(20, 80), breaks = seq(20, 80, by = 10))  + scale_y_continuous(name = "CC coefficient values", limits= c(0.1, 0.8)) +
+labs(title = sprintf("Synchronization Measure and the Correlations at Lag %s", i), subtitle = "Without Windows! \n", col="Pair") +
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), plot.subtitle = element_text(size = 10, hjust=.5), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7))
+
+mypath <- file.path("Alpha")
+
+ggsave(filename = paste("AlphaLag_Facet_", i,".pdf", sep = ""), path = mypath, scale = 1,width=10, height=7, dpi=600)
+
+}
+
+
+```
+**Focus on Lag 0 CCF: Alpha <> Lag 0 Correlation** of Good and Bad Pairs  
+1. Compare best and worst pair (based on total alpha score)  
+2. Total average (alpha and CCF lag 0) over all pairs: study characteristics of good and bad pairs  
+3. Plot CCF at lag 0 for all pairs separately  
+
+```{r}
+#__________ 1. Compare best and worst pair__________#
+
+# Tapwise alpha value: ITI$alpha
+# trialwise CCF lag 0 value: CCF[CCF$lags == 0,]
+# prepare df's containing the CCF values and the alpha
+
+TrialLag0 <- CCF[CCF$lags == 0,]
+sumITI <- summarySE(data = ITI, measurevar = "alpha", groupvars = c("pair", "block", "trial"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+sumITI$value <- TrialLag0$value
+
+#select best/ worst pair according to total alpha score: 
+worst <- totalAlphaAvg[which.max(totalAlphaAvg$alpha),]$pair
+best <- totalAlphaAvg[which.min(totalAlphaAvg$alpha),]$pair
+
+Best <- sumITI[sumITI$pair == best,]
+Worst <- sumITI[sumITI$pair == worst,]
+Worst$value[which.max(Worst$value)]
+
+ggplot(Best, aes(x=Best$alpha, y=Best$value)) +geom_point()+ scale_x_continuous(name = "Alpha", limits= c(10, 150), breaks = seq(10, 150, by = 10))  + scale_y_continuous(name = "CC coefficient values", limits= c(0, 1.0)) +
+labs(title = sprintf("Synchronization Measure and the Correlations at Lag %s (best) \n", 0), col="Block") +
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7)) + geom_smooth( method = lm)
+
+ggplot(Worst, aes(x=Worst$alpha, y=Worst$value)) +geom_point()+ scale_x_continuous(name = "Alpha", limits= c(10, 150), breaks = seq(10, 150, by = 10))  + scale_y_continuous(name = "CC coefficient values", limits= c(0, 1.0)) +
+labs(title = sprintf("Synchronization Measure and the Correlations at Lag %s (worst) \n", 0), col="Pair") +
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7)) + geom_smooth( method = lm)
+
+ggsave(filename = paste("AlphaLag0_Bad(116)",".pdf", sep = ""), path = mypath, scale = 1,width=10, height=7, dpi=600)
+
+#__________ 2. Total average over all pairs: Alpha and CCF at lag 0__________#
+
+# take total average: one alpha each pair
+totalAlphaAvg <- summarySE(data = ITI, measurevar = "alpha", groupvars = c("pair"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+# select CCF at lag 0
+CCFLag0 <- Lags101[Lags101$lags == 0,]
+
+# take total average: one CCF at lag 0 each pair
+CCFLag0Avg <- summarySE(data = CCFLag0, measurevar = "value", groupvars = c("pair"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+
+# append ccf value to alpha df
+totalAlphaAvg$value <- CCFLag0Avg$value
+
+# Study characteristics of bad and good dyads #
+
+#exluding bad dyads (118, 208, 207, 212 > alpha higher than 48)
+totalAlphaAvg <- totalAlphaAvg[totalAlphaAvg$pair != 208 & totalAlphaAvg$pair != 118 & totalAlphaAvg$pair != 207 & totalAlphaAvg$pair != 212,]
+#exluding dyads with very low tapping frequency (~1Hz)
+totalAlphaAvg <- totalAlphaAvg[totalAlphaAvg$pair != 211 & totalAlphaAvg$pair != 202,]
+
+#exluding bad and slow dyads
+totalAlphaAvg <- totalAlphaAvg[totalAlphaAvg$pair != 211 & totalAlphaAvg$pair != 202 & totalAlphaAvg$pair != 208 & totalAlphaAvg$pair != 118 & totalAlphaAvg$pair != 207 & totalAlphaAvg$pair != 212,]
+# displaying only bad! (118, 208, 207, 212 > alpha higher than 48)
+totalAlphaAvg <- totalAlphaAvg[totalAlphaAvg$pair == 208 | totalAlphaAvg$pair == 118 | totalAlphaAvg$pair == 207 | totalAlphaAvg$pair == 212,]
+
+ggplot(totalAlphaAvg, aes(x=totalAlphaAvg$alpha, y=totalAlphaAvg$value)) + scale_x_continuous(name = "Alpha", limits= c(20, 70), breaks = seq(20, 70, by = 10))  + scale_y_continuous(name = "CC coefficient values", limits= c(0.3, 0.6)) +geom_text(aes(label=pair), size = 3)+
+labs(title = sprintf("Synchronization Measure and the Correlations at Lag %s \n", 0), col="Pair") +
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7)) + geom_smooth( method = lm)
+
+mypath <- file.path("Alpha")
+
+ggsave(filename = paste("AlphaLag_Average_onlyBad",".pdf", sep = ""), path = mypath, scale = 1,width=10, height=7, dpi=600)
+
+#________3. Plot CCF at lag 0 for all pairs separately ________#
+
+for (p in pair_names){
+
+Pair <- sumITI[sumITI$pair == p,]
+
+ggplot(Pair, aes(x=Pair$alpha, y=Pair$value)) +geom_point()+ scale_x_continuous(name = "Alpha", limits= c(10, 150), breaks = seq(10, 150, by = 10))  + scale_y_continuous(name = "CC coefficient values", limits= c(0, 1.0)) +
+labs(title = "Synchronization Measure and the Correlations at Lag 0 ", subtitle = sprintf(" Pair %s \n", p), col="Pair") +
+theme(plot.title = element_text(size = 12, hjust=.5, face="bold"), plot.subtitle = element_text(size = 10, hjust=.5),axis.title.x = element_text(size=9), axis.title.y = element_text(size=9, angle=90), axis.text = element_text(size=5), strip.text = element_text(size=7, margin = margin(0.02,0,0.02,0, "cm")), legend.text = element_text(size=7), legend.title = element_text(size=7)) + geom_smooth( method = lm)
+
+mypath <- file.path("Alpha")
+
+ggsave(filename = paste("AlphaLag0_",p,".pdf", sep = ""), path = mypath, scale = 1,width=10, height=7, dpi=600)
+}
+```
