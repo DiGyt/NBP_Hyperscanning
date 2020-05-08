@@ -84,10 +84,9 @@ def combine_raws(raw_1, raw_2):
     return raw_1
 
 
-def mark_bads_and_save(raw, subj_id, sensor_map=False,
+def mark_bads(raw, subj_id, sensor_map=False,
                        block=True, **plot_kwargs):
-    """Plots the data, and saves marked bad channels/segments."""
-
+    
     bad_ch_path = op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv")
     bad_seg_path = op.join(BAD_SEG_PATH, subj_id + "-annot.csv")
 
@@ -95,7 +94,7 @@ def mark_bads_and_save(raw, subj_id, sensor_map=False,
     if op.isfile(bad_ch_path):
         print("Loading preexisting marked channels\n"
               "Additionally marked channels will be added to file.")
-        raw.load_bad_channels(op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv"))
+        raw.load_bad_channels(bad_ch_path)
 
     if op.isfile(bad_seg_path):
         print("Loading preexisting marked segments\n"
@@ -121,18 +120,35 @@ def mark_bads_and_save(raw, subj_id, sensor_map=False,
     # plot the data
     if sensor_map:
         raw.plot_sensors(kind='3d', ch_type='eeg', ch_groups='position')
-    raw.plot(block=block, **plot_kwargs)
+    return raw.plot(block=block, **plot_kwargs)
+    
+    
+def save_bads(raw, subj_id):
+    """Saves bad channels and bad segments to a predefined path."""
+    
+    inp = input("Do you really want to save the data? Falsely marked data might "
+            "be hard to remove.\nEnter 'save' or 's' to save the data. Else, "
+            "changes will be discarded.\n")
 
+    if inp[0] == "s":
+        raw.annotations.save(op.join(BAD_SEG_PATH, subj_id + "-annot.csv"))
+        save_bad_channels(raw, subj_id)
 
+        
+def mark_bads_and_save(raw, subj_id, sensor_map=False,
+                       block=True, **plot_kwargs):
+    """Plots the data, and saves marked bad channels/segments."""
+    
+    mark_bads(raw, subj_id, sensor_map=sensor_map, block=block,
+              **plot_kwargs)
+
+    
     # save the bad channels and bad segments
-    raw.annotations.save(op.join(BAD_SEG_PATH, subj_id + "-annot.csv"))
-    save_bad_channels(raw, subj_id)
+    save_bads(raw, subj_id)
 
-# TODO: Make sure that we use ICA to the full extend
-# more information here: https://mne.tools/stable/auto_tutorials/preprocessing/plot_40_artifact_correction_ica.html
-# Scrap this function if it does not seem helpful
-def run_ica_and_save(raw, subj_id, block=True, **ica_kwargs):
-    """Runs an ICA, lets the user pick out bad Components and saves them."""
+    
+def run_ica(raw, subj_id, block=True, **ica_kwargs):
+    """Runs an ICA, and plots the Components."""
     ica_path = op.join(BAD_COMP_PATH, subj_id + "-ica.fif")
 
     # set the EEG Montage. We use 64 chans from the standard 10-05 system.
@@ -149,11 +165,28 @@ def run_ica_and_save(raw, subj_id, block=True, **ica_kwargs):
         ica.fit(raw, picks=None)
 
     # plot the ica components
-    print("Opening ICA component plot. Close the plot for further options.\n"
-          "You will be able to show it again later.")
     ica.plot_components()
     plt.show(block=block)
+    
+    return ica
 
+
+def save_ica(ica, subj_id):
+    """Save an ICA and all its components to a predefined path."""
+    ica_path = op.join(BAD_COMP_PATH, subj_id + "-ica.fif")
+    ica.save(ica_path)
+        
+
+# TODO: Make sure that we use ICA to the full extend
+# more information here: https://mne.tools/stable/auto_tutorials/preprocessing/plot_40_artifact_correction_ica.html
+# Scrap this function if it does not seem helpful
+def run_ica_and_save(raw, subj_id, block=True, **ica_kwargs):
+    """Runs an ICA, lets the user pick out bad Components and saves them."""
+      
+    ica = run_ica(raw, subj_id, block=block, **ica_kwargs)
+    print("Opening ICA component plot. Close the plot for further options.\n"
+          "You will be able to show it again later.")
+    
     inp = None
     while inp not in ("save", "s", "quit", "q"):
         print("\n{}\nExcluded Components: {}\n".format(ica, ica.exclude))
@@ -187,7 +220,7 @@ def run_ica_and_save(raw, subj_id, block=True, **ica_kwargs):
             plt.show(block=block)
 
     if inp in ("save", "s"):
-        ica.save(ica_path)
+        save_ica(ica, subj_id)
 
 
 # TODO: Check if this function should be put here or be executed in plain text
