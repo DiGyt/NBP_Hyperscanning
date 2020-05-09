@@ -10,7 +10,7 @@ sns.set()
 # create a list of all file names
 
 # read in all files and bind them row-wise into one df
-
+# copy from francas sheet!
 #compute real tapping-times (substract first 3s from all time points)
 
 
