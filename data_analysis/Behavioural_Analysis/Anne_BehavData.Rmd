@@ -13,22 +13,25 @@ library(dplyr)
 library(knitr)
 library(grid)
 library(directlabels)
-knitr::opts_knit$set(root.diyr = '~/behavioral_data/R')
+#knitr::opts_knit$set(root.diyr = '/Users/anne/BehaviouralData')
+#knitr::opts_knit$set(root.diyr = '~/behavioral_data/R')
 
 # load file with functions
-source("Anne_BehavData_Functions_11.R")
+source("Anne_BehavData_Functions.R")
 ```
 **Step 1:** Create data frame of all behavioral csv  
 (*the preparatory period of 3s is substracted from the tapping times (vector called ttap3*)
 ```{r}
 # create a list of all file names
-/Users/anne/Documents/Documents_extended/Thesis/Behavioral Analysis/behavioral_data
-file_list <-  list.files(pattern="*.csv")
+# path to folder that holds multiple .csv files
+folder <- "/Users/anne/BehaviouralData/"      
+file_list <- list.files(path=folder, pattern="*.csv")
+getwd()
 file_names <- substring(file_list, 1,3)
+pair_names <- as.integer(file_names)
 
 # read in all files and bind them row-wise into one df
-data <- do.call("rbind",lapply(file_list, read.csv))
-head(data)
+data <- do.call("rbind", lapply(file_list, function(x) read.csv(paste(folder, x, sep=''), stringsAsFactors = FALSE)))
 
 #compute real tapping-times (substract first 3s from all time points)
 for (i in 1:length(data$ttap)) {
@@ -39,13 +42,13 @@ for (i in 1:length(data$ttap)) {
 
 **Step 2:** Reject all the trials that are not synchronous: *all trials where tap~i of sub~1~ is not the closest to tap~i~ of sub~2~ had to be removed. These non-synchronous trails would otherwise distort the results of the following analysis.*  
 ```{r}
-data <- SynchTrials(data)
+#data <- SynchTrials(data)
 ```
 **Step 3:** Count the trials that have been rejected  
 *Result: df with number of total trials, total and relative number of left over trials)* 
 ```{r}
-LeftTrials <- CountLeftTrials(data)
-pair_names <- LeftTrials$pair
+#LeftTrials <- CountLeftTrials(data)
+#pair_names <- LeftTrials$pair
 ```
 **Step 4:** Compute inter-tap intervals (ITI) between the taps of all subjects  
 *(ITI = interval between the taps for one subject, Result: df with two columns of ITIsub~1~ and ITIsub~2~)*  
@@ -165,7 +168,7 @@ Synchronization Index (from Novembre, 2017)
 - alpha_lin = linearized alpha (range[0:180])  
 ```{r}
 Alpha <- ComputeAlpha(data) 
-
+test <- Alpha[Alpha$pair == 208,]
 # append alpha results to ITI df
 ITI$alpha <- Alpha$alpha_lin
 

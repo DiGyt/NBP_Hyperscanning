@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
-
+%matplotlib qt
 # Step1: Load and Prepare the data
 # create a list of all file names
 
@@ -68,6 +68,11 @@ for pair in subj_list:
     maximal asynchrony, so they should also be included in our data. Otherwise,
     we are "artificially" improving pairs how try to synchronize but have a really bad performance
     (one of them constantly skipping ahead by tapping twice, causing the other to lag behind by one tap)
+
+    Instead of this cleaining process I would follow Novembres cleaning procedure:
+    "trials associated with extreme syn- chronization values
+    (i.e. when the average of the eight syn- chrony values was higher or lower
+    than 2 s.d. from the participant’s mean synchrony) were discarded" (see below)
     '''
 
     # Loop through trials and Calculate ITI for all taps
@@ -138,3 +143,67 @@ for pair in subj_list:
     df2[:30]
     new_df = new_df.append(df2)
     new_df[:50]
+
+# Shows weard outliers!! --> discard in next step
+alpha_mean = new_df.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
+alpha_mean.plot(kind='line',x='tapnr',y='alpha_lin', title='Alpha-average before Cleaning')
+
+new_df.set_index('index', inplace=True)
+
+to_be_excluded = []
+
+for pair in subj_list:
+    pair_trial = new_df[new_df['pair']==pair]
+
+    x = new_df[new_df['pair']==pair].groupby('trial').alpha_lin.mean() <= (2*new_df[new_df['pair']==pair].alpha_lin.std())
+
+    trials_to_reject = list(set(np.arange(1,301)) - set(x[x].index))
+    finde_index= pair_trial.trial.isin(trials_to_reject)
+    to_be_excluded.append(list(finde_index[finde_index].index))
+
+to_be_excluded = [item for elem in to_be_excluded for item in elem]
+
+df_cleaned = new_df.drop(to_be_excluded, axis=0)
+len(df_cleaned)/len(new_df)
+
+alpha_mean = df_cleaned.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
+alpha_mean.plot(kind='line',x='tapnr',y='alpha_lin', title='Alpha-average after Cleaning')
+
+
+
+
+
+
+
+
+
+###alpha_mean = new_df.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
+alpha_mean_block = new_df.groupby(['pair', 'block'], as_index=False)['alpha_lin'].mean()
+alpha_trial = new_df.groupby(['pair', 'trial', 'tapnr'], as_index=False)['alpha_lin'].mean()
+# Detect keep only the ones that are within +3 to -3 standard deviations in the column 'Data'.
+alpha_trial_cleaned = alpha_trial[np.abs(alpha_trial.alpha_lin - alpha_trial.alpha_lin.mean()) <= (2*alpha_trial.alpha_lin.std())]
+1-len(alpha_trial_cleaned)/len(alpha_trial)
+
+new_df.groupby('pair')['alpha_lin'].std()
+for i in range(len(alpha_trial)):
+    new_df.groupby(['pair'], as_index=False)['alpha_lin'].std()['alpha_lin']
+
+####
+# Clean DATA:
+# Discard trials associated with extreme syn- chronization values
+# (i.e. when the average of the eight synchrony values was higher or lower than 2 s.d. from the participant’s mean synchrony)
+
+
+#for pair in subj_list:
+pair = 203
+# 1. Create one df with only this pair
+df_pair = new_df[new_df['pair'] == pair]
+df_pair = df_pair.reset_index()
+range_std = 2*df_pair.alpha_lin.std()
+# Detect keep only the ones that are within +3 to -3 standard deviations in the column 'Data'.
+    for trial in range(1, len(trials)+1):
+        tmp_df = df_pair[df_pair['trial'] == 1]
+        tmp_df_cleaned = tmp_df[np.abs(tmp_df.alpha_lin - tmp_df.alpha_lin.mean()) <= (range_std)]
+
+df_pair_cleaned = df_pair[np.abs(df_pair.alpha_lin - df_pair.alpha_lin.mean()) <= (2*df_pair.alpha_lin.std())]
+1-len(df_pair_cleaned)/len(df_pair)
