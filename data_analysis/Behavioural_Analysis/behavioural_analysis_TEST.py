@@ -28,12 +28,10 @@ df['ttap3'] = df['ttap'] - 3.0
 
 #compute real tapping-times (substract first 3s from all time points)
 subj_list = list(df['pair'].unique())
+new_df = pd.DataFrame()
 
-##### Later loop through all pairs!!! #####
-#for pair in subj_list:
-pair = 202
-# n = len(df[df['pair'] == pair]['ttap3'])/2
-
+#### ONE PAIR TEST ####
+pair = 203
 # 1. Create one df with only this pair
 df_pair = df[df['pair'] == pair]
 df_pair = df_pair.reset_index()
@@ -52,7 +50,7 @@ df2['ttap3_sub2'] = list(sub2_df['ttap3'])
 df2['subject2'] = list(sub2_df['subject'])
 len(df2)
 
-# Calculate the distance between all taps of sub1 and sub2
+# Calculate the distance between the own taps of sub1 and sub2 (individual tapping frequency)
 df2['Delta'] = abs(df2['ttap3'].sub(df2['ttap3_sub2'], axis = 0))
 #df2[:20]
 #df_pair[:20]
@@ -71,32 +69,55 @@ we are "artificially" improving pairs how try to synchronize but have a really b
 (one of them constantly skipping ahead by tapping twice, causing the other to lag behind by one tap)
 '''
 
-# Loop through trials and Calculate Alpha for all taps
+# Loop through trials and Calculate ITI for all taps
 trials = df2['trial'].unique()
 len(trials)
 #df2[df2['trial'] == 1]
 all_ITIsub1 = []
 all_ITIsub2 = []
 
-
 # Compute ITI of all sub1
-for trial in range(1, len(trials)+1):
+####for trial in range(1, len(trials)+1):
     print(trial)
-    tmp_df = df2[df2['trial'] == trial]
-    tmp_df = tmp_df.reset_index()
+tmp_df = df2[df2['trial'] == 1]
+tmp_df = tmp_df.reset_index()
 
-    ITIsub1 = []
-    ITIsub2 = []
+ITIsub1 = []
+ITIsub2 = []
+alpha = []
+alpha_lin = []
 
-    for tap in range(8):
-        ITIsub1.append(tmp_df['ttap3'][tap+1] - tmp_df['ttap3'][tap])
-        ITIsub2.append(tmp_df['ttap3_sub2'][tap+1] - tmp_df['ttap3_sub2'][tap])
 
-    ITIsub1.append(None)
-    ITIsub2.append(None)
+for tap in range(8):
+    ITIsub1.append(tmp_df['ttap3'][tap+1] - tmp_df['ttap3'][tap])
+    ITIsub2.append(tmp_df['ttap3_sub2'][tap+1] - tmp_df['ttap3_sub2'][tap])
 
-    all_ITIsub1.append(ITIsub1)
-    all_ITIsub2.append(ITIsub2)
+#for tap in range(8):
+# alternate which subject is reference subject and which is follower subject in the circular measure
+    if trial%2 > 0:
+        ref_sub = ITIsub1
+    else:
+        ref_sub = ITIsub2
+    numerator = tmp_df['Delta'][tap]
+    denominator = ref_sub[tap] # sub1 as reference subject
+    idx = abs(numerator/ denominator * 360)
+    idx_lin = abs((180 - abs(idx - 180)))
+    alpha.append(idx)
+    alpha_lin.append(idx_lin)
+
+ITIsub1.append(None)
+ITIsub2.append(None)
+alpha.append(None)
+alpha_lin.append(None)
+
+all_ITIsub1.append(ITIsub1)
+all_ITIsub2.append(ITIsub2)
+
+    all_alpha.append(alpha)
+    all_alpha_lin.append(alpha_lin)
+
+
+
 
 # Add ITI_sub1 to data frame
 tmp1 = [item for elem in all_ITIsub1 for item in elem]
@@ -104,5 +125,8 @@ tmp2 = [item for elem in all_ITIsub2 for item in elem]
 
 df2['ITI_sub1'] = tmp1
 df2['ITI_sub2'] = tmp2
+df2['alpha'] =
 
 df2[:30]
+new_df = new_df.append(df2)
+new_df[:50]
