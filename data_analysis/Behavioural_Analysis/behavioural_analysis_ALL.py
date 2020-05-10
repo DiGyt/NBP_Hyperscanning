@@ -145,10 +145,20 @@ for pair in subj_list:
     new_df[:50]
 
 # Shows weard outliers!! --> discard in next step
-alpha_mean = new_df.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
-alpha_mean.plot(kind='line',x='tapnr',y='alpha_lin', title='Alpha-average before Cleaning')
+alpha_mean_before = new_df.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
+#alpha_mean.plot(kind='line',x='tapnr',y='alpha_lin', title='Alpha-average before Cleaning')
+
+fig, ax = plt.subplots(figsize=(8,4))
+
+for idx, gp in alpha_mean_before.groupby('pair'):
+    gp.plot(x='tapnr', y='alpha_lin', ax=ax, label=idx,title='Alpha-average before Cleaning')
+plt.show()
 
 new_df.set_index('index', inplace=True)
+
+# Clean DATA:
+# Discard trials associated with extreme syn- chronization values
+# (i.e. when the average of the eight synchrony values was higher or lower than 2 s.d. from the participant’s mean synchrony)
 
 to_be_excluded = []
 
@@ -164,46 +174,14 @@ for pair in subj_list:
 to_be_excluded = [item for elem in to_be_excluded for item in elem]
 
 df_cleaned = new_df.drop(to_be_excluded, axis=0)
-len(df_cleaned)/len(new_df)
+print('Percentage of discarded trials due to cleaing:', 1-len(df_cleaned)/len(new_df))
 
 alpha_mean = df_cleaned.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
-alpha_mean.plot(kind='line',x='tapnr',y='alpha_lin', title='Alpha-average after Cleaning')
 
+fig, ax = plt.subplots(figsize=(8,4))
+for idx, gp in alpha_mean.groupby('pair'):
+    gp.plot(x='tapnr', y='alpha_lin', ax=ax, label=idx,title='Alpha-average after Cleaning')
+    ax.set_ylim(0,60)
+plt.show()
 
-
-
-
-
-
-
-
-###alpha_mean = new_df.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
-alpha_mean_block = new_df.groupby(['pair', 'block'], as_index=False)['alpha_lin'].mean()
-alpha_trial = new_df.groupby(['pair', 'trial', 'tapnr'], as_index=False)['alpha_lin'].mean()
-# Detect keep only the ones that are within +3 to -3 standard deviations in the column 'Data'.
-alpha_trial_cleaned = alpha_trial[np.abs(alpha_trial.alpha_lin - alpha_trial.alpha_lin.mean()) <= (2*alpha_trial.alpha_lin.std())]
-1-len(alpha_trial_cleaned)/len(alpha_trial)
-
-new_df.groupby('pair')['alpha_lin'].std()
-for i in range(len(alpha_trial)):
-    new_df.groupby(['pair'], as_index=False)['alpha_lin'].std()['alpha_lin']
-
-####
-# Clean DATA:
-# Discard trials associated with extreme syn- chronization values
-# (i.e. when the average of the eight synchrony values was higher or lower than 2 s.d. from the participant’s mean synchrony)
-
-
-#for pair in subj_list:
-pair = 203
-# 1. Create one df with only this pair
-df_pair = new_df[new_df['pair'] == pair]
-df_pair = df_pair.reset_index()
-range_std = 2*df_pair.alpha_lin.std()
-# Detect keep only the ones that are within +3 to -3 standard deviations in the column 'Data'.
-    for trial in range(1, len(trials)+1):
-        tmp_df = df_pair[df_pair['trial'] == 1]
-        tmp_df_cleaned = tmp_df[np.abs(tmp_df.alpha_lin - tmp_df.alpha_lin.mean()) <= (range_std)]
-
-df_pair_cleaned = df_pair[np.abs(df_pair.alpha_lin - df_pair.alpha_lin.mean()) <= (2*df_pair.alpha_lin.std())]
-1-len(df_pair_cleaned)/len(df_pair)
+# TODO: story percentage of lost trials for each pair
