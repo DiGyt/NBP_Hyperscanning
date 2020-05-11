@@ -1,4 +1,4 @@
-﻿1. Green fixation screen 1 (training)
+1. Green fixation screen 1 (training)
 2. Green fixation screen 2 (training)
 3. Red cross both screens (exp)
 4. Green cross screen 1

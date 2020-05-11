@@ -144,6 +144,7 @@ for pair in subj_list:
     new_df = new_df.append(df2)
     new_df[:50]
 
+new_df[new_df.pair == 206]
 # Shows weard outliers!! --> discard in next step
 alpha_mean_before = new_df.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
 #alpha_mean.plot(kind='line',x='tapnr',y='alpha_lin', title='Alpha-average before Cleaning')
