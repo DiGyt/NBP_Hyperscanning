@@ -166,7 +166,6 @@ for pair in subj_list:
     pair_trial = new_df[new_df['pair']==pair]
 
     x = new_df[new_df['pair']==pair].groupby('trial').alpha_lin.mean() <= (2*new_df[new_df['pair']==pair].alpha_lin.std())
-
     trials_to_reject = list(set(np.arange(1,301)) - set(x[x].index))
     finde_index= pair_trial.trial.isin(trials_to_reject)
     to_be_excluded.append(list(finde_index[finde_index].index))

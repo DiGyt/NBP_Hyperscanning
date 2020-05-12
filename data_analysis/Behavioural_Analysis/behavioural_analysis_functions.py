@@ -5,24 +5,24 @@ import pandas as pd
 import seaborn as sns
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
-%matplotlib qt
 
-def get_alpha(df):
+def get_alpha(df, subj_list):
     '''
     Caclulate intertap-interval of both subjects and alpha- synchronizeation measure (+linearized)
     '''
     # Step1: Load and Prepare the data
     # create a list of all file names
-    subj_list = list(df['pair'].unique())
 
     new_df = pd.DataFrame()
 
     for pair in subj_list:
-    # n = len(df[df['pair'] == pair]['ttap3'])/2
-        #pair = 203
+
         # 1. Create one df with only this pair
         df_pair = df[df['pair'] == pair]
         df_pair = df_pair.reset_index()
+        #sub1 = list(df_pair[df_pair['subject']== 1]['ttap3'])
+        #sub2 = list(df_pair[df_pair['subject']== 2]['ttap3'])
+        #list(df_pair[df_pair['subject']== 1].index)
 
         # 2. Separate df: one with sub1 and one with sub2 data
         # (delete the partner's taps, while containing all trial/ block/ etc. information)
@@ -35,10 +35,9 @@ def get_alpha(df):
         df2['subject2'] = list(sub2_df['subject'])
         len(df2)
 
-        # Calculate the distance between the own taps of sub1 and sub2 (individual tapping frequency)
+        # Calculate the distance between taps of sub1 and sub2
         df2['Delta'] = abs(df2['ttap3'].sub(df2['ttap3_sub2'], axis = 0))
         #df2[:20]
-        #df_pair[:20]
         '''
         I decided not to exclude asynchronous trials from the data, since I was not convinced
         why we did it the last time: Our reason to drop asynchronous trials was forumalated as follows:
@@ -59,7 +58,8 @@ def get_alpha(df):
         than 2 s.d. from the participant’s mean synchrony) were discarded" (see below)
         '''
 
-        # Loop through trials and Calculate ITI for all taps
+        # Loop through trials and Calculate ITI for all taps:
+        # distance between the own taps of sub1 and sub2 (individual tapping frequency)
         trials = df2['trial'].unique()
         len(trials)
         #df2[df2['trial'] == 1]
@@ -68,7 +68,7 @@ def get_alpha(df):
         all_alpha = []
         all_alpha_lin = []
 
-        # Compute ITI of all sub1
+        # Compute ITI of sub1 and sub 2
         for trial in range(1, len(trials)+1):
             tmp_df = df2[df2['trial'] == trial]
             tmp_df = tmp_df.reset_index()
@@ -83,7 +83,6 @@ def get_alpha(df):
                 ITIsub1.append(tmp_df['ttap3'][tap+1] - tmp_df['ttap3'][tap])
                 ITIsub2.append(tmp_df['ttap3_sub2'][tap+1] - tmp_df['ttap3_sub2'][tap])
 
-            #for tap in range(8):
             # alternate which subject is reference subject and which is follower subject in the circular measure
                 if trial%2 > 0:
                     ref_sub = ITIsub1
@@ -124,7 +123,8 @@ def get_alpha(df):
 
         new_df = new_df.append(df2)
 
-        return new_df
+    new_df.set_index('index', inplace=True)
+    return new_df
 
 
 def clean_data(df):
@@ -136,17 +136,23 @@ def clean_data(df):
     to_be_excluded = []
 
     for pair in subj_list:
-        pair_trial = new_df[new_df['pair']==pair]
+        pair_trial = df[df['pair']==pair]
 
-        x = new_df[new_df['pair']==pair].groupby('trial').alpha_lin.mean() <= (2*new_df[new_df['pair']==pair].alpha_lin.std())
+        # test for which trials average of the eight synchrony values is higher or lower than 2 s.d. from the participant’s mean synchrony
+        # x is a list assigning true or false to all 300 trials
+        x = df[df['pair']==pair].groupby('trial').alpha_lin.mean() <= (2*df[df['pair']==pair].alpha_lin.std())
 
+        # store index of these trials to be eliminated later
+        # first select all trial-numbers with "False" in x (subtracting all indices of trues from 300)
         trials_to_reject = list(set(np.arange(1,301)) - set(x[x].index))
-        finde_index= pair_trial.trial.isin(trials_to_reject)
-        to_be_excluded.append(list(finde_index[finde_index].index))
+        # find index of all rows of these trials
+        find_index= pair_trial.trial.isin(trials_to_reject)
+        to_be_excluded.append(list(find_index[find_index].index))
 
     to_be_excluded = [item for elem in to_be_excluded for item in elem]
 
-    df_cleaned = new_df.drop(to_be_excluded, axis=0)
-    print('Percentage of discarded trials due to cleaing:', 1-len(df_cleaned)/len(new_df))
+    # remove trials with the respective index fro the df
+    df_cleaned = df.drop(to_be_excluded, axis=0)
+    print('Percentage of discarded trials due to cleaing:', 1-len(df_cleaned)/len(df))
 
-    return (df_cleaned)
+    return df_cleaned
