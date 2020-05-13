@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from os.path import expanduser
-from data_analysis.functions_preprocessing import \
-    (split_raws, mark_bads, save_bads, run_ica, save_ica)
 
 # add functions script file path to sys path
 conf_path = os.getcwd()
@@ -15,6 +13,9 @@ sys.path.append(conf_path)
 sys.path.append(conf_path + '/data_analysis')
 
 from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data)
+from Behavioural_Analysis.functions_preprocessing_mne20 import \
+    (split_raws, mark_bads, save_bads, run_ica, save_ica)
+
 # !!!! eliminate subs 200, 210, 213, 214, 299
 #%matplotlib qt
 %matplotlib qt
@@ -38,8 +39,13 @@ df = pd.concat(df_from_each_file, ignore_index=True)
 # Compute real tapping-times (substract first 3s from all time points)
 df['ttap3'] = df['ttap'] - 3.0
 subj_list = list(df['pair'].unique())
+pairs_with_invalid_data = [200, 210, 213, 214, 299]
+subj_list = [item for item in subj_list if item not in pairs_with_invalid_data]
 # Compute alpha synchronization measure, individual intertap-Interval (ITI) and tapping distanca (Delta)
 df2 = get_alpha(df, subj_list)
+
+# Delete all rows with "None" (all tap #9)
+#df2 = df2.dropna()
 
 df_pair = df2[df2.pair == pair]
 
@@ -62,8 +68,14 @@ combined_raw = mne.io.read_raw_fif(subs_path, preload=True)
 raw = split_raws(combined_raw)[int(participant)]
 del combined_raw
 
-events = mne.find_events(raw)
+# create dict assigning event-names to event-codes, only needed to read events from annotations object
+# (descriptive event-codes as stings, like 't1s1', are apparantly not accepted by this function)
+event_lst = list(range(6,24))
+name_event = ['s1/t1', 's1/t2', 's1/t3', 's1/t4', 's1/t5', 's1/t6', 's1/t7', 's1/t8', 's1/t9', 's2/t1', 's2/t2', 's2/t3', 's2/t4', 's2/t5', 's2/t6', 's2/t7', 's2/t8', 's2/t9']
+event_names = [str(i) for i in event_lst]
+event_dict_temp = dict(zip(name_event ,event_lst))
 
+events = mne.find_events(raw)
 
 # get behavioural data of this pair:
 df_pair = df2[df2.pair == pair]
