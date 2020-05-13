@@ -2,8 +2,6 @@ import os
 import glob
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import statsmodels.api as sm
 import matplotlib.pyplot as plt
 %matplotlib qt
 # Step1: Load and Prepare the data
