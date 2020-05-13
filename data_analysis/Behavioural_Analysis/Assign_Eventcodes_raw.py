@@ -27,17 +27,18 @@ del combined_raw
 events = mne.find_events(raw)
 
 # Create a dict that assigns the event-codes (e.g. 't1s1' for tap 1 of sub 1) to the event-ints
-n = len(events[:,2])
-event_codes = np.ndarray(shape=(n,4), dtype=object)
-len(events[:,2])
-event_codes[:, :-1] = events
-event_codes[:,1] = np.array(np.arange(n))
-
-# Create another dictionary that assigns all the event-codes as descriptive strings
-# to the events as int
-name_event = ['t1s1', 't2s1', 't3s1', 't4s1', 't5s1', 't6s1', 't7s1', 't8s1', 't9s1', 't1s2', 't2s2', 't3s2', 't4s2', 't5s2', 't6s2', 't7s2', 't8s2', 't9s2']
 event_lst = list(range(6,24))
-event_dict = dict(zip(name_event,event_lst))
+event_descriptions = ['s1/t1', 's1/t2', 's1/t3', 's1/t4', 's1/t5', 's1/t6', 's1/t7', 's1/t8', 's1/t9', 's2/t1', 's2/t2', 's2/t3', 's2/t4', 's2/t5', 's2/t6', 's2/t7', 's2/t8', 's2/t9']
+event_names = [str(i) for i in event_lst]
+event_dict_temp = dict(zip(event_names,event_lst))
+event_dict = dict(zip(event_descriptions ,event_lst))
+
+
+# Create a dict that assigns the event-codes (e.g. 't1s1' for tap 1 of sub 1) to the event-ints
+n = len(events[:,2])
+event_codes = np.ndarray(shape=(n,3), dtype=object)
+len(events[:,2])
+event_codes[:,:-1] = np.delete(events, [1], axis=1)
 
 # function to get key based on the value
 def get_key(val, my_dict):
@@ -48,14 +49,16 @@ def get_key(val, my_dict):
 
 # find values in the event-information and store respective key in the dictionary
 count = 0
-for i in event_codes[:,2]:
+for i in event_codes[:,1]:
     if i in list(event_dict.values()):
-        event_codes[:,3][count] = get_key(i, event_dict)
+        event_codes[:,2][count] = get_key(i, event_dict)
         count+=1
     else:
         count +=1
 
 # convert nd array to dataframe for easier processing
-df = pd.DataFrame(event_codes)
-df.columns= ('sample','index','eventcode','eventname')
-df = df.dropna()
+df_events = pd.DataFrame(event_codes)
+df_events.columns= ('sample','eventcode','eventname')
+df_events = df_events.dropna()
+
+df_events['in_seconds'] = list(df_events['sample']/1024)
