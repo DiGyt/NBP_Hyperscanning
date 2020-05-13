@@ -84,17 +84,16 @@ events[:50]
 n = len(events[:,2])
 event_codes = np.ndarray(shape=(n,3), dtype=object)
 len(events[:,2])
-
 event_codes[:,:-1] = np.delete(events, [1], axis=1)
 
-#event_codes[:,1] = np.array(np.arange(n))
-
+# function to get key based on the value
 def get_key(val, my_dict):
     for key, value in my_dict.items():
          if val == value:
              return key
     return "key doesn't exist"
 
+# find values in the event-information and store respective key in the dictionary
 count = 0
 for i in event_codes[:,1]:
     if i in list(event_dict.values()):
@@ -103,6 +102,7 @@ for i in event_codes[:,1]:
     else:
         count +=1
 
+# convert nd array to dataframe for easier processing
 df_events = pd.DataFrame(event_codes)
 df_events.columns= ('sample','eventcode','eventname')
 df_events = df_events.dropna()
