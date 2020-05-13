@@ -13,7 +13,7 @@ sys.path.append(conf_path)
 sys.path.append(conf_path + '/data_analysis')
 
 from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data)
-
+# !!!! eliminate subs 200, 210, 213, 214, 299
 #%matplotlib qt
 
 #for p in sys.path:
