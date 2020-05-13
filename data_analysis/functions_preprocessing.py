@@ -86,7 +86,7 @@ def combine_raws(raw_1, raw_2):
 
 def mark_bads(raw, subj_id, sensor_map=False,
                        block=True, **plot_kwargs):
-    
+
     bad_ch_path = op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv")
     bad_seg_path = op.join(BAD_SEG_PATH, subj_id + "-annot.csv")
 
@@ -121,11 +121,11 @@ def mark_bads(raw, subj_id, sensor_map=False,
     if sensor_map:
         raw.plot_sensors(kind='3d', ch_type='eeg', ch_groups='position')
     return raw.plot(block=block, **plot_kwargs)
-    
-    
+
+
 def save_bads(raw, subj_id):
     """Saves bad channels and bad segments to a predefined path."""
-    
+
     inp = input("Do you really want to save the data? Falsely marked data might "
             "be hard to remove.\nEnter 'save' or 's' to save the data. Else, "
             "changes will be discarded.\n")
@@ -134,19 +134,19 @@ def save_bads(raw, subj_id):
         raw.annotations.save(op.join(BAD_SEG_PATH, subj_id + "-annot.csv"))
         save_bad_channels(raw, subj_id)
 
-        
+
 def mark_bads_and_save(raw, subj_id, sensor_map=False,
                        block=True, **plot_kwargs):
     """Plots the data, and saves marked bad channels/segments."""
-    
+
     mark_bads(raw, subj_id, sensor_map=sensor_map, block=block,
               **plot_kwargs)
 
-    
+
     # save the bad channels and bad segments
     save_bads(raw, subj_id)
 
-    
+
 def run_ica(raw, subj_id, block=True, **ica_kwargs):
     """Runs an ICA, and plots the Components."""
     ica_path = op.join(BAD_COMP_PATH, subj_id + "-ica.fif")
@@ -167,7 +167,7 @@ def run_ica(raw, subj_id, block=True, **ica_kwargs):
     # plot the ica components
     ica.plot_components()
     plt.show(block=block)
-    
+
     return ica
 
 
@@ -175,18 +175,18 @@ def save_ica(ica, subj_id):
     """Save an ICA and all its components to a predefined path."""
     ica_path = op.join(BAD_COMP_PATH, subj_id + "-ica.fif")
     ica.save(ica_path)
-        
+
 
 # TODO: Make sure that we use ICA to the full extend
 # more information here: https://mne.tools/stable/auto_tutorials/preprocessing/plot_40_artifact_correction_ica.html
 # Scrap this function if it does not seem helpful
 def run_ica_and_save(raw, subj_id, block=True, **ica_kwargs):
     """Runs an ICA, lets the user pick out bad Components and saves them."""
-      
+
     ica = run_ica(raw, subj_id, block=block, **ica_kwargs)
     print("Opening ICA component plot. Close the plot for further options.\n"
           "You will be able to show it again later.")
-    
+
     inp = None
     while inp not in ("save", "s", "quit", "q"):
         print("\n{}\nExcluded Components: {}\n".format(ica, ica.exclude))

@@ -47,7 +47,7 @@ df2 = get_alpha(df, subj_list)
 # Delete all rows with "None" (all tap #9)
 #df2 = df2.dropna()
 
-df_pair = df2[df2.pair == pair]
+df_pair = df2[df2.pair == int(pair)]
 
 ## 2. Load and prepare tapping-related events-information from EEG all_files
 pair = input("Please Type in, which subject pair you want to clean.\n"
@@ -71,11 +71,45 @@ del combined_raw
 # create dict assigning event-names to event-codes, only needed to read events from annotations object
 # (descriptive event-codes as stings, like 't1s1', are apparantly not accepted by this function)
 event_lst = list(range(6,24))
-name_event = ['s1/t1', 's1/t2', 's1/t3', 's1/t4', 's1/t5', 's1/t6', 's1/t7', 's1/t8', 's1/t9', 's2/t1', 's2/t2', 's2/t3', 's2/t4', 's2/t5', 's2/t6', 's2/t7', 's2/t8', 's2/t9']
+event_descriptions = ['s1/t1', 's1/t2', 's1/t3', 's1/t4', 's1/t5', 's1/t6', 's1/t7', 's1/t8', 's1/t9', 's2/t1', 's2/t2', 's2/t3', 's2/t4', 's2/t5', 's2/t6', 's2/t7', 's2/t8', 's2/t9']
 event_names = [str(i) for i in event_lst]
-event_dict_temp = dict(zip(name_event ,event_lst))
+event_dict_temp = dict(zip(event_names,event_lst))
+event_dict = dict(zip(event_descriptions ,event_lst))
 
+raw.info
 events = mne.find_events(raw)
+events[:50]
+
+# Create a dict that assigns the event-codes (e.g. 't1s1' for tap 1 of sub 1) to the event-ints
+n = len(events[:,2])
+event_codes = np.ndarray(shape=(n,3), dtype=object)
+len(events[:,2])
+
+event_codes[:,:-1] = np.delete(events, [1], axis=1)
+
+#event_codes[:,1] = np.array(np.arange(n))
+
+def get_key(val, my_dict):
+    for key, value in my_dict.items():
+         if val == value:
+             return key
+    return "key doesn't exist"
+
+count = 0
+for i in event_codes[:,1]:
+    if i in list(event_dict.values()):
+        event_codes[:,2][count] = get_key(i, event_dict)
+        count+=1
+    else:
+        count +=1
+
+df_events = pd.DataFrame(event_codes)
+df_events.columns= ('sample','eventcode','eventname')
+df_events = df_events.dropna()
+
+df_events['in_seconds'] = list(df_events['sample']/1024)
+
 
 # get behavioural data of this pair:
 df_pair = df2[df2.pair == pair]
+df_pair[:50]
