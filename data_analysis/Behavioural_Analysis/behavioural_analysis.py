@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 #sys.path.append(conf_path)
 #sys.path.append(conf_path + '/data_analysis')
 
-#from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data)
+from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data)
 
 # !!!! eliminate subs 200, 210, 213, 214, 299
 #%matplotlib qt
@@ -35,6 +35,8 @@ df['ttap3'] = df['ttap'] - 3.0
 subj_list = list(df['pair'].unique())
 # Compute alpha synchronization measure, individual intertap-Interval (ITI) and tapping distanca (Delta)
 alpha_df = get_alpha(df, subj_list)
+alpha_df.drop(['condition', 'subject','subject2', 'jitter'], axis = 1)
+
 
 
 alpha_df[alpha_df.pair == 206][:50]
