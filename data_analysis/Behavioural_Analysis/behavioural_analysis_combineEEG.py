@@ -56,7 +56,9 @@ df_pair = behvaioural_df_alpha[behvaioural_df_alpha.pair == int(pair)]
 
 
 # create path to file where all EEG Data is stored
-EEG_dir = "/Volumes/AnneSSD/EEGData/mne_data/sourcedata/"
+#EEG_dir = "/Volumes/AnneSSD/EEGData/mne_data/sourcedata/"
+EEG_dir = "/Users/anne/mne_data/sourcedata/"
+
 
 # define the subjects id and its path
 subj_id = "sub-{0}_p-{1}".format(pair, participant)
@@ -64,6 +66,7 @@ subs_path = EEG_dir + "sub-{0}/eeg/sub-{0}_task-hyper_eeg.fif".format(pair)
 # load the data
 combined_raw = mne.io.read_raw_fif(subs_path, preload=True)
 raw = split_raws(combined_raw)[int(participant)]
+raw.plot()
 del combined_raw
 
 # create dict assigning event-names to event-codes, only needed to read events from annotations object
