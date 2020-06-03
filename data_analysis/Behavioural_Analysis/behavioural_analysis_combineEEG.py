@@ -42,8 +42,24 @@ subj_list = [item for item in subj_list if item not in pairs_with_invalid_data]
 # 2. Compute alpha synchronization measure, individual intertap-Interval (ITI) and tapping distance (Delta)
 behvaioural_df_alpha = get_alpha(behvaioural_df, subj_list)
 
+#### ADVANCED STUFF #####
+# copy the information of behavioural synchrony (alpha, delta and ITI) in behvaioural_df
+
+behvaioural_df_complete = pd.merge(behvaioural_df_alpha, behvaioural_df, on = ['pair','block','trial','tapnr'], how='right')
+behvaioural_df_complete[:10]
+# delet not needed columns
+behvaioural_df_complete = behvaioural_df_complete.drop(['ttap_sub1', 'ttap3_sub1','ttap3_sub2','player_start_first_x', 'condition', 'player_start_first_y' ], axis = 1)
+
+###########
+
+
 # 2.1 Delete all rows with "None" (all tap #9)
-behvaioural_df_alpha = behvaioural_df_alpha.dropna()
+#behvaioural_df_alpha = behvaioural_df_alpha.dropna()
+len(behvaioural_df_alpha[behvaioural_df_alpha.alpha>360])/len(behvaioural_df_alpha)
+behvaioural_df_alpha[(behvaioural_df_alpha['Delta']>5)&(behvaioural_df_alpha['alpha_lin']<180)]
+
+
+#behvaioural_df_alpha.to_csv('behvaioural_df_alpha.csv')
 
 ## 2. Load and prepare tapping-related events-information from EEG all_files
 pair = input("Please Type in, which subject pair you want to clean.\n"
@@ -52,7 +68,8 @@ pair = input("Please Type in, which subject pair you want to clean.\n"
 participant = input("\nPlease Type in, which subject pair you want to clean.\n"
                     "Type: 0 for the first participant and: 1 for the second.\n")
 
-df_pair = behvaioural_df_alpha[behvaioural_df_alpha.pair == int(pair)]
+df_pair = behvaioural_df_complete[behvaioural_df_complete.pair == int(pair)]
+df_pair.reset_index(inplace=True)
 
 
 # create path to file where all EEG Data is stored
@@ -102,15 +119,20 @@ for i in event_codes[:,1]:
         count+=1
     else:
         count +=1
+event_codes[:50]
 
 # convert nd array to dataframe for easier processing
 df_events = pd.DataFrame(event_codes)
 df_events.columns= ('sample','eventcode','eventname')
-df_events = df_events.dropna()
+df_taps = df_events.dropna()
+df_taps.reset_index(inplace=True)
+df_taps.drop('index', axis = 1)
 
-df_events['in_seconds'] = list(df_events['sample']/1024)
+
+#df_events['in_seconds'] = list(df_events['sample']/1024)
 
 
 # get behavioural data of this pair:
-df_pair = df2[df2.pair == pair]
+df_pair = behvaioural_df_alpha[behvaioural_df_alpha.pair == int(pair)]
 df_pair[:50]
+len(df_pair)

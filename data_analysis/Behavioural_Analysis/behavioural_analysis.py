@@ -37,10 +37,21 @@ subj_list = [item for item in subj_list if item not in pairs_with_invalid_data]
 
 # 2. Compute alpha synchronization measure, individual intertap-Interval (ITI) and tapping distance (Delta)
 behvaioural_df_alpha = get_alpha(behvaioural_df, subj_list)
-behvaioural_df_alpha.groupby(['pair']).Delta.describe()
+behvaioural_df_alpha.groupby(['pair']).alpha_lin.describe()
 
-# 2.1 Delete all rows with "None" (all tap #9)
-behvaioural_df_alpha = behvaioural_df_alpha.dropna()
+# 2.1. Find crazy trials
+invalid_in_percent = len(behvaioural_df_alpha[behvaioural_df_alpha.alpha>360])/len(behvaioural_df_alpha)*100
+print('percentage of invalid trials (whole data):',round(invalid_in_percent,3),'%')
+idx = behvaioural_df_alpha.query('alpha<=360').index
+#behvaioural_df_alpha.loc[idx, 'valid'] = 'yes'
+behvaioural_df_alpha[behvaioural_df_alpha.valid == 'yes']
+behvaioural_df_alpha.valid.isna().sum()-behvaioural_df_alpha.alpha.isna().sum()
+
+#behvaioural_df_alpha = behvaioural_df_alpha.drop('valid', axis = 1)
+
+
+# 2.2. Delete all rows with "None" (all tap #9)
+#behvaioural_df_alpha = behvaioural_df_alpha.dropna()
 behvaioural_df_alpha.describe()
 behvaioural_df_alpha[(behvaioural_df_alpha['Delta']>5)&(behvaioural_df_alpha['alpha_lin']<180)]
 
