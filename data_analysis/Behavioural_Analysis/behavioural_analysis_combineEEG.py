@@ -20,7 +20,7 @@ from Behavioural_Analysis.functions_preprocessing_mne20 import \
 ### Behavioural PART ####
 # Set defaults
 data_path = "/Users/anne/BehaviouralData"
-plots_path = './plots/'
+#plots_path = './plots/'
 #for p in sys.path:
     #print(p)
 
@@ -31,7 +31,7 @@ all_files = glob.glob(os.path.join(data_path, "*.csv"))
 # 1.1 Concatenate all files to obtain a single dataframe
 df_from_each_file = (pd.read_csv(f) for f in all_files)
 behvaioural_df = pd.concat(df_from_each_file, ignore_index=True)
-
+behvaioural_df[:50]
 # 1.2 Prepare data-frame for furtcher processing
 # Compute real tapping-times (substract first 3s from all time points)
 behvaioural_df['ttap3'] = behvaioural_df['ttap'] - 3.0
@@ -50,7 +50,7 @@ behvaioural_df_alpha = get_alpha(behvaioural_df, subj_list)
 behvaioural_df_complete = pd.merge(behvaioural_df_alpha, behvaioural_df, on = ['pair','block','trial','tapnr'], how='right')
 behvaioural_df_complete[:50]
 # delet not needed columns
-behvaioural_df_complete = behvaioural_df_complete.drop(['ttap_sub1', 'ttap', 'ttap3_sub1','ttap3_sub2','player_start_first_x', 'condition'], axis = 1)
+behvaioural_df_complete = behvaioural_df_complete.drop(['ttap_sub1', 'ttap', 'ttap3_sub1','ttap3_sub2','player_start_first_x','player_start_first_y', 'condition'], axis = 1)
 
 ###########
 
@@ -60,8 +60,6 @@ behvaioural_df_complete = behvaioural_df_complete.drop(['ttap_sub1', 'ttap', 'tt
 len(behvaioural_df_alpha[behvaioural_df_alpha.alpha>360])/len(behvaioural_df_alpha)
 # weird data?
 # behvaioural_df_alpha[(behvaioural_df_alpha['Delta']>5)&(behvaioural_df_alpha['alpha_lin']<180)]
-
-
 #behvaioural_df_alpha.to_csv('behvaioural_df_alpha.csv')
 
 #### EEG PART ###
@@ -84,6 +82,7 @@ subs_path = EEG_dir + "sub-{0}/eeg/sub-{0}_task-hyper_eeg.fif".format(pair)
 combined_raw = mne.io.read_raw_fif(subs_path, preload=True)
 raw = split_raws(combined_raw)[int(participant)]
 raw.plot()
+raw.info
 del combined_raw
 
 # 2. Create a dict that assigns the event-codes (e.g. 't1s1' for tap 1 of sub 1) to the event-ints,
@@ -139,13 +138,12 @@ df_taps.drop('index', axis = 1)
 #### Combine EEG and Behavioural stuff ###
 # Compare event-information from EEG with events of behavioural data (of this pair):
 df_pair = behvaioural_df_complete[behvaioural_df_complete.pair == int(pair)]
-df_pair.reset_index(inplace=True, drop = True)
+df_pair.reset_index(inplace=True, drop=True)
 df_pair.to_csv('taps_from_Behav_203.csv')
 
+#Sort df_pair such that all rows are ordered according to the tapping sequence of each trials
+df_pair = df_pair.sort_values(by = ['trial', 'ttap3'], ignore_index = True)
+df_pair.reset_index(inplace=True, drop=True)
+
 df_pair[:10]
-df_taps[10:20]
-tmp[10:20]
-
-df_pair = df_pair.sort_values(by = ['trial', 'ttap3'])
-
-# Sort df_pair such that all rows are ordered according to the tapping sequence of each trials
+df_taps[:10]
