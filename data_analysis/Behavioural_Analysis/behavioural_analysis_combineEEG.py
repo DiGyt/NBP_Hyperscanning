@@ -147,3 +147,13 @@ df_pair.reset_index(inplace=True, drop=True)
 
 df_pair[:10]
 df_taps[:10]
+'''not working
+min_sample_distance = df_taps['in_seconds'].diff().min()
+df_taps['sample'].diff().mean()
+df_taps['in_seconds']= df_taps['sample']/1024
+distances = pd.DataFrame(df_taps['in_seconds'].diff())
+distances.drop(loc_ghost_trigger, inplace = True)
+min_sample_distance2 = distances.min()[0]
+loc_ghost_trigger = df_taps[df_taps['in_seconds'].diff()==min_sample_distance2].index[0]
+df_taps[20:33]
+'''
