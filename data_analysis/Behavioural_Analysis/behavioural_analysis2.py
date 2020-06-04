@@ -48,9 +48,6 @@ behvaioural_df_complete = behvaioural_df_complete.drop(['ttap_sub1', 'ttap3_sub1
 
 
 
-
-
-
 # 2.1. Find crazy trials
 invalid_in_percent = len(behvaioural_df_complete[behvaioural_df_complete.alpha>360])/len(behvaioural_df_complete)*100
 print('percentage of invalid trials (whole data):',round(invalid_in_percent,3),'%')
