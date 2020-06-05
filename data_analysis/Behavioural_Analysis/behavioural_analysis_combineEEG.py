@@ -9,19 +9,16 @@ from os.path import expanduser
 
 # add functions script file path to sys path
 sys.path.append(os.getcwd() + '/data_analysis')
-from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha2, get_alpha, clean_data)
+from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data, eliminate_ghost_triggers)
 from Behavioural_Analysis.functions_preprocessing_mne20 import \
     (split_raws, mark_bads, save_bads, run_ica, save_ica)
 
-# !!!! eliminate subs 200, 210, 213, 214, 299
 #%matplotlib qt
 
 ### Behavioural PART ####
 # Set defaults
 data_path = "/Users/anne/BehaviouralData"
 #plots_path = './plots/'
-#for p in sys.path:
-    #print(p)
 
 # 1. Load and Prepare the data
 # Create a list of path names that end with .csv
@@ -41,8 +38,8 @@ behvaioural_df = behvaioural_df[behvaioural_df["pair"].isin(subj_list)]
 behvaioural_df.drop(['condition', 'player_start_first'], axis = 1, inplace = True)
 
 # 2. Compute alpha synchronization measure, individual intertap-Interval (ITI) and tapping distance (Delta)
-behvaioural_df_alpha = get_alpha2(behvaioural_df, subj_list, True)
-#behvaioural_df_alpha2 = get_alpha(behvaioural_df, subj_list)
+behvaioural_df_alpha = get_alpha(behvaioural_df, subj_list, True)
+#behvaioural_df_alpha2 = get_alpha(behvaioural_df, subj_list, False)
 ###########
 
 
@@ -62,8 +59,8 @@ participant = input("\nPlease Type in, which subject pair you want to clean.\n"
                     "Type: 0 for the first participant and: 1 for the second.\n")
 
 # 1.1 create path to file where all EEG Data is stored
-#EEG_dir = "/Volumes/AnneSSD/EEGData/mne_data/sourcedata/"
-EEG_dir = "/Users/anne/mne_data/sourcedata/"
+EEG_dir = "/Volumes/AnneSSD/EEGData/mne_data/sourcedata/"
+#EEG_dir = "/Users/anne/mne_data/sourcedata/"
 
 
 # 1.2 define the subjects id and its path
@@ -89,6 +86,7 @@ event_dict = dict(zip(event_descriptions ,event_lst))
 
 # 2.2. Look for events in raw
 #raw.info
+raw.annotations
 events = mne.find_events(raw)
 
 # 2.3 Create an array based on the found events that later relates all events found in raw to the respective event-name
@@ -121,16 +119,69 @@ df_taps = df_events.dropna()
 df_taps.reset_index(inplace=True)
 df_taps.drop('index', axis = 1)
 
-#df_taps.to_csv('taps_from_EEG_203.csv')
 
+
+# Look for ghost triggers:
+# create a window around each 18 tpas (i.e. one trial)
+# check of there are duplicate eventcodes (i.e. ghost triggers)
+
+# 1. Check which events occured more often than 300 times and store them in a list
+#counts = df_taps.pivot_table(index=['eventcode'], aggfunc='size')
+    ghost_events = df_taps.eventcode.value_counts()
+    ghost_events = list(ghost_events[ghost_events>300].index)
+
+    # 2. Create list to store  indices of ghost-triggers
+    ghost_idx = []
+    tmp = []
+    #df_taps[1998:2017] ### save a ghost trigger
+    idx = 0
+
+    for i in range(300):
+        print(idx)
+        # Make a window around each trial (of 18 taps)
+        window = df_taps[idx:idx+18]
+        #window = df_taps[1998:2017]
+        # store indices of triggers that occur twice
+        potential_ghosts_idx = list(window[window.duplicated(['eventcode'])].index)
+        # check if the eventcode at this index is also in the list of events that occur > 300 times (duplicates)
+        # if yes: append index to ghost-trigger list
+
+        # only advance if there was no ghost-trigger
+        # else, remove ghost trigger, reset df-index and start with same index
+        advance = True
+        for potential_ghost in potential_ghosts_idx:
+            if window.loc[potential_ghost].eventcode in ghost_events:
+                ghost_idx.append(potential_ghost)
+                df_taps=df_taps.drop(potential_ghost).reset_index(drop = True)
+                advance = False
+        if advance == True:
+            idx+= 18
+df_taps_clean = df_taps.drop(ghost_idx).reset_index(drop = True)
+df_taps_clean.eventcode.value_counts()
+df_taps.iloc[2010]
+'''
+for i in range(301):
+    print(idx)
+    window = df_taps[idx:idx+18]
+    duplicated = list(window[window.duplicated(['eventcode'])].index)
+    window.iloc[duplicated].eventcode ==
+    window[window.duplicated(['eventcode'])].eventcode
+    if duplicated:
+        duplicates_indices.extend(duplicated)
+    idx+= 18
+'''
+first_trial = df_taps[18:40]
+
+duplicateRowsDF = first_trial[first_trial.duplicated(['eventcode'])].index
+df_taps.rolling(18).duplicated(['eventcode'])
 
 #df_events['in_seconds'] = list(df_events['sample']/1024)
 
 #### Combine EEG and Behavioural stuff ###
 # Compare event-information from EEG with events of behavioural data (of this pair):
-df_pair = behvaioural_df_complete[behvaioural_df_complete.pair == int(pair)]
+df_pair = behvaioural_df_alpha[behvaioural_df_alpha.pair == int(pair)]
 df_pair.reset_index(inplace=True, drop=True)
-df_pair.to_csv('taps_from_Behav_{}}.csv'.format(pair))
+df_pair.to_csv('taps_from_Behav_{}.csv'.format(pair))
 
 #Sort df_pair such that all rows are ordered according to the tapping sequence within each trial
 df_pair = df_pair.sort_values(by = ['trial', 'ttap3'], ignore_index = True)

@@ -127,6 +127,48 @@ def get_alpha(df, subj_list, compatible):
         new_df = new_df_compatible
     return new_df
 
+def eliminate_ghost_triggers(df_taps):
+
+        '''
+        Look for ghost triggers:
+        - First find events that occur more often than 300 times
+        - Create a window around each 18 tpas (i.e. one trial)
+        - Check if there are duplicate eventcodes (i.e. ghost triggers) within this trial
+
+        Output: cleaned taps_
+        '''
+
+    #1. Check which events occured more often than 300 times and store them in a list
+    #counts = df_taps.pivot_table(index=['eventcode'], aggfunc='size')
+    ghosts = df_taps.eventcode.value_counts()
+    ghosts = list(ghosts[ghosts>300].index)
+    for i in ghosts:
+
+        # 2. Create list to store  indices of ghost-triggers
+        ghost_idx = []
+        # 3. Loop through df with the tapping events, check for duplicates in each trial
+        # that also occur in the ghosts list
+        idx = 0
+        for i in range(301):
+            print(idx)
+            # Make a window around each trial (of 18 taps)
+            window = df_taps[idx:idx+18]
+            # store indices of triggers that occur twice
+            potential_ghosts_idx = list(window[window.duplicated(['eventcode'])].index)
+            # check if the eventcode at this index is also in the list of events that occur > 300 times (duplicates)
+            # if yes: append index to ghost-trigger list
+            for i in potential_ghosts_idx:
+                if window.loc[i].eventcode in ghosts:
+                    ghost_idx.append(i)
+                    df_taps.drop(i).reset_index(iplace = True, drop = True)
+            idx+= 18
+
+    # ELiminate ghost-triggers from df with the taps
+    df_taps_clean = df_taps.drop(ghost_idx).reset_index(drop = True)
+
+    return df_taps_clean
+
+
 def clean_data(df):
     subj_list = list(df['pair'].unique())
 # Clean DATA:
