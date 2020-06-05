@@ -122,7 +122,7 @@ def get_alpha(df, subj_list):
         new_df = new_df.append(df2)
 
     new_df.set_index('index', inplace=True)
-    new_df.drop(['condition', 'subject','subject2', 'jitter'], axis = 1)
+    new_df.drop(['condition', 'subject','subject2', 'jitter'], axis = 1,inplace=True)
     new_df.rename(columns = {'ttap': 'ttap_sub1', 'ttap3': 'ttap3_sub1'} , inplace = True)
 
     return new_df
