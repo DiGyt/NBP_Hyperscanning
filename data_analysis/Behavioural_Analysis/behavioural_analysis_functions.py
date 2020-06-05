@@ -122,13 +122,13 @@ def get_alpha(df, subj_list):
         new_df = new_df.append(df2)
 
     new_df.set_index('index', inplace=True)
-    new_df.drop(['condition', 'subject','subject2', 'jitter'], axis = 1,inplace=True)
+    new_df.drop(['subject','subject2', 'jitter'], axis = 1)
     new_df.rename(columns = {'ttap': 'ttap_sub1', 'ttap3': 'ttap3_sub1'} , inplace = True)
 
     return new_df
 
 
-def get_alpha(df, subj_list, compatible):
+def get_alpha2(df, subj_list, compatible):
     '''
     Caclulate intertap-interval of both subjects and alpha- synchronizeation measure (+linearized)
     '''
@@ -246,9 +246,14 @@ def get_alpha(df, subj_list, compatible):
         new_df = new_df.append(df2)
 
     new_df.set_index('index', inplace=True)
-    new_df.drop(['condition', 'subject','subject2', 'jitter'], axis = 1)
+    new_df.drop(['subject','subject2', 'jitter'], axis = 1, inplace = True)
     new_df.rename(columns = {'ttap': 'ttap_sub1', 'ttap3': 'ttap3_sub1'} , inplace = True)
 
+    if compatible == True:
+        new_df_compatible = pd.merge(new_df, df, on = ['pair','block','trial','tapnr'], how='right')
+        print(new_df_compatible.head())
+        new_df_compatible = new_df_compatible.drop(['ttap_sub1', 'ttap', 'ttap3_sub1','ttap3_sub2'], axis = 1)
+        new_df = new_df_compatible
     return new_df
 
 def clean_data(df):

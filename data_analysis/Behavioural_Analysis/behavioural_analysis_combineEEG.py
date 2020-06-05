@@ -9,13 +9,12 @@ from os.path import expanduser
 
 # add functions script file path to sys path
 sys.path.append(os.getcwd() + '/data_analysis')
-from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data)
+from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha2, get_alpha, clean_data)
 from Behavioural_Analysis.functions_preprocessing_mne20 import \
     (split_raws, mark_bads, save_bads, run_ica, save_ica)
 
 # !!!! eliminate subs 200, 210, 213, 214, 299
 #%matplotlib qt
-%matplotlib qt
 
 ### Behavioural PART ####
 # Set defaults
@@ -31,7 +30,6 @@ all_files = glob.glob(os.path.join(data_path, "*.csv"))
 # 1.1 Concatenate all files to obtain a single dataframe
 df_from_each_file = (pd.read_csv(f) for f in all_files)
 behvaioural_df = pd.concat(df_from_each_file, ignore_index=True)
-behvaioural_df[:50]
 # 1.2 Prepare data-frame for furtcher processing
 # Compute real tapping-times (substract first 3s from all time points)
 behvaioural_df['ttap3'] = behvaioural_df['ttap'] - 3.0
@@ -40,18 +38,11 @@ subj_list = list(behvaioural_df['pair'].unique())
 pairs_with_invalid_data = [200, 210, 213, 214, 299]
 subj_list = [item for item in subj_list if item not in pairs_with_invalid_data]
 behvaioural_df = behvaioural_df[behvaioural_df["pair"].isin(subj_list)]
+behvaioural_df.drop(['condition', 'player_start_first'], axis = 1, inplace = True)
 
 # 2. Compute alpha synchronization measure, individual intertap-Interval (ITI) and tapping distance (Delta)
-behvaioural_df_alpha = get_alpha(behvaioural_df, subj_list)
-
-#### ADVANCED STUFF #####
-# copy the information of behavioural synchrony (alpha, delta and ITI) in behvaioural_df
-
-behvaioural_df_complete = pd.merge(behvaioural_df_alpha, behvaioural_df, on = ['pair','block','trial','tapnr'], how='right')
-behvaioural_df_complete[:50]
-# delet not needed columns
-behvaioural_df_complete = behvaioural_df_complete.drop(['ttap_sub1', 'ttap', 'ttap3_sub1','ttap3_sub2','player_start_first_x','player_start_first_y', 'condition'], axis = 1)
-
+behvaioural_df_alpha = get_alpha2(behvaioural_df, subj_list, True)
+#behvaioural_df_alpha2 = get_alpha(behvaioural_df, subj_list)
 ###########
 
 
@@ -139,9 +130,9 @@ df_taps.drop('index', axis = 1)
 # Compare event-information from EEG with events of behavioural data (of this pair):
 df_pair = behvaioural_df_complete[behvaioural_df_complete.pair == int(pair)]
 df_pair.reset_index(inplace=True, drop=True)
-df_pair.to_csv('taps_from_Behav_203.csv')
+df_pair.to_csv('taps_from_Behav_{}}.csv'.format(pair))
 
-#Sort df_pair such that all rows are ordered according to the tapping sequence of each trials
+#Sort df_pair such that all rows are ordered according to the tapping sequence within each trial
 df_pair = df_pair.sort_values(by = ['trial', 'ttap3'], ignore_index = True)
 df_pair.reset_index(inplace=True, drop=True)
 
