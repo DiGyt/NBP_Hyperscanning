@@ -156,24 +156,9 @@ df_taps.drop('index', axis = 1)
                 advance = False
         if advance == True:
             idx+= 18
-df_taps_clean = df_taps.drop(ghost_idx).reset_index(drop = True)
-df_taps_clean.eventcode.value_counts()
-df_taps.iloc[2010]
-'''
-for i in range(301):
-    print(idx)
-    window = df_taps[idx:idx+18]
-    duplicated = list(window[window.duplicated(['eventcode'])].index)
-    window.iloc[duplicated].eventcode ==
-    window[window.duplicated(['eventcode'])].eventcode
-    if duplicated:
-        duplicates_indices.extend(duplicated)
-    idx+= 18
-'''
-first_trial = df_taps[18:40]
-
-duplicateRowsDF = first_trial[first_trial.duplicated(['eventcode'])].index
-df_taps.rolling(18).duplicated(['eventcode'])
+#df_taps_clean = df_taps.drop(ghost_idx).reset_index(drop = True)
+# Test if all ghost triggers have been cleaned successfully
+df_taps.eventcode.value_counts()
 
 #df_events['in_seconds'] = list(df_events['sample']/1024)
 
