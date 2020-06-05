@@ -126,17 +126,15 @@ def get_alpha(df, subj_list, compatible):
         new_df_compatible = new_df_compatible.drop(['ttap_sub1', 'ttap', 'ttap3_sub1','ttap3_sub2'], axis = 1)
         new_df = new_df_compatible
     return new_df
-
+'''
 def eliminate_ghost_triggers(df_taps):
-
-        '''
         Look for ghost triggers:
         - First find events that occur more often than 300 times
         - Create a window around each 18 tpas (i.e. one trial)
         - Check if there are duplicate eventcodes (i.e. ghost triggers) within this trial
 
         Output: cleaned taps_
-        '''
+
 
     #1. Check which events occured more often than 300 times and store them in a list
     #counts = df_taps.pivot_table(index=['eventcode'], aggfunc='size')
@@ -167,6 +165,7 @@ def eliminate_ghost_triggers(df_taps):
     df_taps_clean = df_taps.drop(ghost_idx).reset_index(drop = True)
 
     return df_taps_clean
+'''
 
 
 def clean_data(df):

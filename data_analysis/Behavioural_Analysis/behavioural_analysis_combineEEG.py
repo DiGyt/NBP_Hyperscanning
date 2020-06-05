@@ -9,7 +9,7 @@ from os.path import expanduser
 
 # add functions script file path to sys path
 sys.path.append(os.getcwd() + '/data_analysis')
-from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data, eliminate_ghost_triggers)
+from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data)#, eliminate_ghost_triggers)
 from Behavioural_Analysis.functions_preprocessing_mne20 import \
     (split_raws, mark_bads, save_bads, run_ica, save_ica)
 
@@ -88,6 +88,7 @@ event_dict = dict(zip(event_descriptions ,event_lst))
 #raw.info
 raw.annotations
 events = mne.find_events(raw)
+len(events)
 
 # 2.3 Create an array based on the found events that later relates all events found in raw to the respective event-name
 n = len(events[:,2])
@@ -114,6 +115,7 @@ event_codes[:50]
 
 # 2.5. Convert nd array to dataframe for easier processing
 df_events = pd.DataFrame(event_codes)
+len(df_events)
 df_events.columns= ('sample','eventcode','eventname')
 df_taps = df_events.dropna()
 df_taps.reset_index(inplace=True)
@@ -174,13 +176,14 @@ df_pair.reset_index(inplace=True, drop=True)
 
 df_pair[:10]
 df_taps[:10]
-'''not working
-min_sample_distance = df_taps['in_seconds'].diff().min()
-df_taps['sample'].diff().mean()
-df_taps['in_seconds']= df_taps['sample']/1024
-distances = pd.DataFrame(df_taps['in_seconds'].diff())
-distances.drop(loc_ghost_trigger, inplace = True)
-min_sample_distance2 = distances.min()[0]
-loc_ghost_trigger = df_taps[df_taps['in_seconds'].diff()==min_sample_distance2].index[0]
-df_taps[20:33]
-'''
+df_taps_alpha = df_taps
+df_taps_alpha['alpha'] = df_pair['alpha_lin']
+
+# create events-array, where the 2nd column is filled with alphas
+df_events
+events_alpha = pd.merge(df_events, df_taps_alpha, on = ['sample','eventcode'], how='left')}
+events_alpha.drop(['eventname_y','eventname_x','index'],axis = 1, inplace = True)
+events_alpha_array[:,2] = events_alpha.alpha
+events_alpha_array[:50]
+events_alpha_df = pd.DataFrame(events_alpha_array)
+events_alpha_df.to_csv('events_forMNE_{}.csv'.format(pair))
