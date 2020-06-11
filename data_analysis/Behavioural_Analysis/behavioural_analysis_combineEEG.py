@@ -7,8 +7,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from os.path import expanduser
 
+path = os.getcwd() + '/data_analysis'
 # add functions script file path to sys path
-sys.path.append(os.getcwd() + '/data_analysis')
+sys.path.append(path)
 from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data)#, eliminate_ghost_triggers)
 from Behavioural_Analysis.functions_preprocessing_mne20 import \
     (split_raws, mark_bads, save_bads, run_ica, save_ica)
@@ -16,33 +17,9 @@ from Behavioural_Analysis.functions_preprocessing_mne20 import \
 #%matplotlib qt
 
 ### Behavioural PART ####
-# Set defaults
-data_path = "/Users/anne/BehaviouralData"
-#plots_path = './plots/'
-
-# 1. Load and Prepare the data
-# Create a list of path names that end with .csv
-all_files = glob.glob(os.path.join(data_path, "*.csv"))
-
-# 1.1 Concatenate all files to obtain a single dataframe
-df_from_each_file = (pd.read_csv(f) for f in all_files)
-behvaioural_df = pd.concat(df_from_each_file, ignore_index=True)
-# 1.2 Prepare data-frame for furtcher processing
-# Compute real tapping-times (substract first 3s from all time points)
-behvaioural_df['ttap3'] = behvaioural_df['ttap'] - 3.0
-subj_list = list(behvaioural_df['pair'].unique())
-# Eliminate Subjects with invalid datasets
-pairs_with_invalid_data = [200, 210, 213, 214, 299]
-subj_list = [item for item in subj_list if item not in pairs_with_invalid_data]
-behvaioural_df = behvaioural_df[behvaioural_df["pair"].isin(subj_list)]
-behvaioural_df.drop(['condition', 'player_start_first'], axis = 1, inplace = True)
-
-# 2. Compute alpha synchronization measure, individual intertap-Interval (ITI) and tapping distance (Delta)
-behvaioural_df_alpha = get_alpha(behvaioural_df, subj_list, True)
-#behvaioural_df_alpha2 = get_alpha(behvaioural_df, subj_list, False)
-###########
-
-
+# Load Behavioural Data (all pairs in one df with alpha values)
+path_csv = path + '/Behavioural_Analysis/Behvaioural_Analysis_Data/'
+behvaioural_df_alpha = pd.read_csv(path_csv + "Behavioural_Data_Alpha.csv", index_col=0)
 # 2.1 Delete all rows with "None" (all tap #9)
 #behvaioural_df_alpha = behvaioural_df_alpha.dropna()
 len(behvaioural_df_alpha[behvaioural_df_alpha.alpha>360])/len(behvaioural_df_alpha)
@@ -129,35 +106,35 @@ df_taps.drop('index', axis = 1)
 
 # 1. Check which events occured more often than 300 times and store them in a list
 #counts = df_taps.pivot_table(index=['eventcode'], aggfunc='size')
-    ghost_events = df_taps.eventcode.value_counts()
-    ghost_events = list(ghost_events[ghost_events>300].index)
+ghost_events = df_taps.eventcode.value_counts()
+ghost_events = list(ghost_events[ghost_events>300].index)
 
-    # 2. Create list to store  indices of ghost-triggers
-    ghost_idx = []
-    tmp = []
-    #df_taps[1998:2017] ### save a ghost trigger
-    idx = 0
+# 2. Create list to store  indices of ghost-triggers
+ghost_idx = []
+tmp = []
+#df_taps[1998:2017] ### save a ghost trigger
+idx = 0
 
-    for i in range(300):
-        print(idx)
-        # Make a window around each trial (of 18 taps)
-        window = df_taps[idx:idx+18]
-        #window = df_taps[1998:2017]
-        # store indices of triggers that occur twice
-        potential_ghosts_idx = list(window[window.duplicated(['eventcode'])].index)
-        # check if the eventcode at this index is also in the list of events that occur > 300 times (duplicates)
-        # if yes: append index to ghost-trigger list
+for i in range(300):
+    print(idx)
+    # Make a window around each trial (of 18 taps)
+    window = df_taps[idx:idx+18]
+    #window = df_taps[1998:2017]
+    # store indices of triggers that occur twice
+    potential_ghosts_idx = list(window[window.duplicated(['eventcode'])].index)
+    # check if the eventcode at this index is also in the list of events that occur > 300 times (duplicates)
+    # if yes: append index to ghost-trigger list
 
-        # only advance if there was no ghost-trigger
-        # else, remove ghost trigger, reset df-index and start with same index
-        advance = True
-        for potential_ghost in potential_ghosts_idx:
-            if window.loc[potential_ghost].eventcode in ghost_events:
-                ghost_idx.append(potential_ghost)
-                df_taps=df_taps.drop(potential_ghost).reset_index(drop = True)
-                advance = False
-        if advance == True:
-            idx+= 18
+    # only advance if there was no ghost-trigger
+    # else, remove ghost trigger, reset df-index and start with same index
+    advance = True
+    for potential_ghost in potential_ghosts_idx:
+        if window.loc[potential_ghost].eventcode in ghost_events:
+            ghost_idx.append(potential_ghost)
+            df_taps=df_taps.drop(potential_ghost).reset_index(drop = True)
+            advance = False
+    if advance == True:
+        idx+= 18
 #df_taps_clean = df_taps.drop(ghost_idx).reset_index(drop = True)
 # Test if all ghost triggers have been cleaned successfully
 df_taps.eventcode.value_counts()
@@ -168,7 +145,7 @@ df_taps.eventcode.value_counts()
 # Compare event-information from EEG with events of behavioural data (of this pair):
 df_pair = behvaioural_df_alpha[behvaioural_df_alpha.pair == int(pair)]
 df_pair.reset_index(inplace=True, drop=True)
-df_pair.to_csv('taps_from_Behav_{}.csv'.format(pair))
+df_pair.to_csv(path_csv+'taps_from_Behav_{}.csv'.format(pair))
 
 #Sort df_pair such that all rows are ordered according to the tapping sequence within each trial
 df_pair = df_pair.sort_values(by = ['trial', 'ttap3'], ignore_index = True)
@@ -178,12 +155,9 @@ df_pair[:10]
 df_taps[:10]
 df_taps_alpha = df_taps
 df_taps_alpha['alpha'] = df_pair['alpha_lin']
+#df_taps_alpha[df_taps_alpha['alpha']>180]
 
 # create events-array, where the 2nd column is filled with alphas
-df_events
-events_alpha = pd.merge(df_events, df_taps_alpha, on = ['sample','eventcode'], how='left')}
+events_alpha = pd.merge(df_events, df_taps_alpha, on = ['sample','eventcode'], how='left')
 events_alpha.drop(['eventname_y','eventname_x','index'],axis = 1, inplace = True)
-events_alpha_array[:,2] = events_alpha.alpha
-events_alpha_array[:50]
-events_alpha_df = pd.DataFrame(events_alpha_array)
-events_alpha_df.to_csv('events_forMNE_{}.csv'.format(pair))
+events_alpha.to_csv('events_forMNE_{}.csv'.format(pair))
