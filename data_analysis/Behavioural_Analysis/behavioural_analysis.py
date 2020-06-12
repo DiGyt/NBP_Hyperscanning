@@ -1,108 +1,148 @@
 import os
+import sys
 import glob
+import seaborn as sns
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import statsmodels.api as sm
 import matplotlib.pyplot as plt
+# add functions script file path to sys path
+sys.path.append(os.getcwd() + '/data_analysis')
+from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data)
 
-# Step1: Load and Prepare the data
-# create a list of all file names
+# Set defaults
+data_path = "/Users/anne/BehaviouralData"
+plots_path = './plots/'
 
-# read in all files and bind them row-wise into one df
-# copy from francas sheet!
+# make folder for plots
+os.makedirs(os.path.dirname(plots_path), exist_ok=True)
 
-# Create path to the folder "behavioral"
-filepath = "/Users/anne/BehaviouralData"
+#interactive plots
+#%matplotlib qt
 
+# 1. Load and Prepare the data
 # Create a list of path names that end with .csv
-all_files = glob.glob(os.path.join(filepath, "*.csv"))
+all_files = glob.glob(os.path.join(data_path, "*.csv"))
 
-# Concatenate all files to obtain a single dataframe
+# 1.1 Concatenate all files to obtain a single dataframe
 df_from_each_file = (pd.read_csv(f) for f in all_files)
-df = pd.concat(df_from_each_file, ignore_index=True)
+behvaioural_df = pd.concat(df_from_each_file, ignore_index=True)
 
+# 1.2 Prepare data-frame for furtcher processing
 # Compute real tapping-times (substract first 3s from all time points)
-df['ttap3'] = df['ttap'] - 3.0
+behvaioural_df['ttap3'] = behvaioural_df['ttap'] - 3.0
+subj_list = list(behvaioural_df['pair'].unique())
+# Eliminate Subjects with invalid datasets
+pairs_with_invalid_data = [200, 210, 213, 214, 299]
+subj_list = [item for item in subj_list if item not in pairs_with_invalid_data]
+
+# 2. Compute alpha synchronization measure, individual intertap-Interval (ITI) and tapping distance (Delta)
+behvaioural_df_alpha = get_alpha(behvaioural_df, subj_list)
+behvaioural_df_alpha.groupby(['pair']).alpha_lin.describe()
+
+# 2.1. Find crazy trials
+invalid_in_percent = len(behvaioural_df_alpha[behvaioural_df_alpha.alpha>360])/len(behvaioural_df_alpha)*100
+print('percentage of invalid trials (whole data):',round(invalid_in_percent,3),'%')
+idx = behvaioural_df_alpha.query('alpha<=360').index
+#behvaioural_df_alpha.loc[idx, 'valid'] = 'yes'
+behvaioural_df_alpha[behvaioural_df_alpha.valid == 'yes']
+behvaioural_df_alpha.valid.isna().sum()-behvaioural_df_alpha.alpha.isna().sum()
+
+#behvaioural_df_alpha = behvaioural_df_alpha.drop('valid', axis = 1)
 
 
-#compute real tapping-times (substract first 3s from all time points)
-subj_list = list(df['pair'].unique())
+# 2.2. Delete all rows with "None" (all tap #9)
+#behvaioural_df_alpha = behvaioural_df_alpha.dropna()
+behvaioural_df_alpha.describe()
+behvaioural_df_alpha[(behvaioural_df_alpha['Delta']>5)&(behvaioural_df_alpha['alpha_lin']<180)]
 
-##### Later loop through all pairs!!! #####
-#for pair in subj_list:
-pair = 202
-# n = len(df[df['pair'] == pair]['ttap3'])/2
+# 3. Clean the data:
+# Discard trials associated with extreme syn- chronization values
+# i.e. when the average of the eight synchrony values was higher or lower than
+# 2 s.d. from the participant’s mean synchrony (see Novembre 2012)
+behvaioural_df_alpha_cleaned = clean_data(behvaioural_df_alpha)
 
-# 1. Create one df with only this pair
-df_pair = df[df['pair'] == pair]
-df_pair = df_pair.reset_index()
-#sub1 = list(df_pair[df_pair['subject']== 1]['ttap3'])
-#sub2 = list(df_pair[df_pair['subject']== 2]['ttap3'])
-#list(df_pair[df_pair['subject']== 1].index)
+## OR: Eliminate all taps where alpha_lin is bigger than 180
+# TODO: remove whole trial where one alpha_lin > 180
+behvaioural_df_alpha_cleaned = behvaioural_df_alpha[behvaioural_df_alpha.alpha_lin<=180]
+eliminated_data = 1- len(behvaioural_df_alpha_cleaned)/len(behvaioural_df_alpha)
 
-# 2. Separate df: one with sub1 and one with sub2 data
-# (delete the partner's taps, while containing all trial/ block/ etc. information)
-df2 = df_pair.drop(list(df_pair[df_pair['subject']== 2].index), axis=0)
-sub2_df = df_pair.drop(list(df_pair[df_pair['subject']== 1].index), axis=0)
 
-# 3. Combine both to one
-# (sub1 and sub2 in separat columns not separate rows, easier to process)
-df2['ttap3_sub2'] = list(sub2_df['ttap3'])
-df2['subject2'] = list(sub2_df['subject'])
-len(df2)
+### 4. PLOTTING ###
 
-# Calculate the distance between all taps of sub1 and sub2
-df2['Delta'] = abs(df2['ttap3'].sub(df2['ttap3_sub2'], axis = 0))
-#df2[:20]
-#df_pair[:20]
+### 4.1. Mean alpha synchrinization per tap (of all trials) for all pairs
+# tapwise Alpha-Average Before Cleaning ###
+alpha_mean_before = behvaioural_df_alpha.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
+# tapwise Alpha-Average After cleaning
+alpha_mean_after = behvaioural_df_alpha_cleaned.groupby(['pair', 'tapnr'], as_index=False)['alpha_lin'].mean()
+
+
+plot_df = alpha_mean_before
+plot_df = alpha_df
+# Plot alpha-synchronization of the whole experiment, all pairs_with_invalid_data
+fig, ax = plt.subplots(figsize=(8,4))
+for idx, gp in plot_df.groupby('pair'):
+    gp.plot.line(x='tapnr', y='alpha_lin', ax=ax, label=idx,title='Alpha-average before Cleaning', lw=0.5)
+plt.show()
+
+
+# 4.2 Plot parts of the data
+plot_df = behvaioural_df_alpha_cleaned.reset_index()
+# differet cleaning style: eliminate all trials with alpha > 180
+# select some pairs
+plot_pairs = [208, 203]#,203,206,208]
+plot_df = plot_df[plot_df['pair'].isin(plot_pairs)]
+# limit number of trials
+num_trials= 100
+plot_trials = list(np.arange(200,300))
+#yticks = [20,40,60,80,100,120,140,160,180]
+plot_df = plot_df[plot_df['trial'].isin(plot_trials)]
+sns.set(context = 'paper', style = 'whitegrid')
+_, ax = plt.subplots(figsize=(8,4))
+for idx, gp in plot_df.groupby('pair'):
+    gp.reset_index(inplace=True)
+    gp.plot.line(y='alpha_lin', ax=ax, ylim = [0,120],label=idx,title='Alpha-values of first {} trials'.format(num_trials))
+    ax.set_xlabel("tap number")
+    ax.set_ylabel("Aplha (linearized)")
+#plt.show()
+plt.savefig(plots_path+'Alpha_lin_Last{}'.format(plot_pairs), dpi = 600)
+
+num_trials= 100
+plot_trials = list(np.arange(num_trials))
+#yticks = [20,40,60,80,100,120,140,160,180]
+plot_df = plot_df[plot_df['trial'].isin(plot_trials)]
+_, ax = plt.subplots(figsize=(8,4))
+for idx, gp in plot_df.groupby('pair'):
+    gp.reset_index(inplace=True)
+    gp.plot.line(y='alpha_lin', ax=ax, ylim = [0,120],label=idx,title='Alpha-values of first {} trials'.format(num_trials), lw=0.8)
+    ax.set_xlabel("tap number")
+    ax.set_ylabel("Aplha (linearized)")
+plt.show()
+
+
+fig, axs = plt.subplots(4, 1, sharex=True, sharey=True, figsize=(15,10))
 '''
-I decided not to exclude asynchronous trials from the data, since I was not convinced
-why we did it the last time: Our reason to drop asynchronous trials was forumalated as follows:
-"the trials in which the overall order of taps was not consecutive have to be exlcuded, i.e.
-all trials where a tap i+1 of one participant occurred before-/or at the time of tap i of the other participant.
-In other words, when one of them skipped ahead by tapping twice, causing the other to lag behind by one tap.
-> We justified this by saying that when computing the alpha-synchronization,
-the nominator (delta) should be always smaller than the denominator (ITI of reference subject)
+# add big shared axes, hide frame
+fig.add_subplot(111, frameon=False)
+plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+plt.xlabel('tap number')
+plt.ylabel('Aplha (linearized)')
+plt.title('Alpha-values of first {} trials'.format(num_trials), fontsize = 15)
 
-> However, why should this be necessary? asynchronous trials like this onyl reflect
-maximal asynchrony, so they should also be included in our data. Otherwise,
-we are "artificially" improving pairs how try to synchronize but have a really bad performance
-(one of them constantly skipping ahead by tapping twice, causing the other to lag behind by one tap)
+for gp in plot_df.groupby('pair'):
+    axs[idx].plot.line(y='alpha_lin', ax=ax, ylim = [0,120], lw=0.8)
+plt.show()
+
+
+# Plot each graph
+axs[0].plot(t, s1)
+axs[1].plot(t, s2)
+axs[2].plot(t, s3)
+axs[3].plot(t, s4)
+
+fig, ax = plt.subplots(figsize=(8,4))
+for idx, gp in alpha_mean_after.groupby('pair'):
+    gp.plot(x='tapnr', y='alpha_lin', ax=ax, label=idx,title='Alpha-average after Cleaning')
+    ax.set_ylim(0,60)
+plt.show()
+
 '''
-
-# Loop through trials and Calculate Alpha for all taps
-trials = df2['trial'].unique()
-len(trials)
-#df2[df2['trial'] == 1]
-all_ITIsub1 = []
-all_ITIsub2 = []
-
-
-# Compute ITI of all sub1
-for trial in range(1, len(trials)+1):
-    print(trial)
-    tmp_df = df2[df2['trial'] == trial]
-    tmp_df = tmp_df.reset_index()
-
-    ITIsub1 = []
-    ITIsub2 = []
-
-    for tap in range(8):
-        ITIsub1.append(tmp_df['ttap3'][tap+1] - tmp_df['ttap3'][tap])
-        ITIsub2.append(tmp_df['ttap3_sub2'][tap+1] - tmp_df['ttap3_sub2'][tap])
-
-    ITIsub1.append(None)
-    ITIsub2.append(None)
-
-    all_ITIsub1.append(ITIsub1)
-    all_ITIsub2.append(ITIsub2)
-
-# Add ITI_sub1 to data frame
-tmp1 = [item for elem in all_ITIsub1 for item in elem]
-tmp2 = [item for elem in all_ITIsub2 for item in elem]
-
-df2['ITI_sub1'] = tmp1
-df2['ITI_sub2'] = tmp2
-
-df2[:30]
