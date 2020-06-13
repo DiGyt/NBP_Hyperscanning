@@ -31,7 +31,7 @@ connectivity_matrices = []
 small_world_coeffs = []
 
 # Perform the data analysis
-for subj_pair in ['202', '203']:  #['202','203','204','205','206','207','208','209','211','212']:
+for subj_pair in ['202','203','204','205','206','207','208','209','211','212']:
 
     subs_path = subject_dir + "sub-{0}/eeg/sub-{0}_task-hyper_eeg.fif".format(subj_pair)
     behav_path = op.join(behav_dir, "{0}.csv".format(subj_pair))
@@ -74,7 +74,7 @@ for subj_pair in ['202', '203']:  #['202','203','204','205','206','207','208','2
                         reject_by_annotation=True)
 
     # Perform the high level analysis for each epoch
-    for epoch in epochs[:2]:
+    for epoch in epochs:
 
         # calculate the ISPC
         ispc_matrix, freqs = full_ispc(epoch, epochs.info["sfreq"],
