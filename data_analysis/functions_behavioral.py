@@ -109,7 +109,11 @@ def remove_ghost_triggers(df):
             current_index = indices[i]
         
             # the initial tap codes are allowed to be smaller than the previous taps
-            if current_code not in (6, 15):
+            #if current_code not in (6, 15):
+            # FIXME: The above logic leaves out ghost triggers with code 6 or 15. we must make sure these are also included.
+            # i fix this in the below statement. However, this was not run in python, so if there are any errors, this might be the line to correct
+            is_start_tap = ((current_code == 6) and (previous_code == 14)) or ((current_code == 15) and (previous_code == 23))
+            if not is_start_tap:
             
                 # for all other taps, if the code is not one step higher than the
                 # previous trigger, it's a ghost trigger.
