@@ -27,6 +27,7 @@ len(behvaioural_df_alpha[behvaioural_df_alpha.alpha>360])/len(behvaioural_df_alp
 # behvaioural_df_alpha[(behvaioural_df_alpha['Delta']>5)&(behvaioural_df_alpha['alpha_lin']<180)]
 #behvaioural_df_alpha.to_csv('behvaioural_df_alpha.csv')
 
+###START from here for a new pair###
 #### EEG PART ###
 ## 1. Load and prepare tapping-related events-information from EEG all_files
 pair = input("Please Type in, which subject pair you want to clean.\n"
@@ -97,9 +98,6 @@ df_events.columns= ('sample','eventcode','eventname')
 df_taps = df_events.dropna()
 df_taps.reset_index(inplace=True)
 df_taps.drop('index', axis = 1)
-
-
-
 # Look for ghost triggers:
 # create a window around each 18 tpas (i.e. one trial)
 # check of there are duplicate eventcodes (i.e. ghost triggers)
@@ -139,8 +137,6 @@ for i in range(300):
 # Test if all ghost triggers have been cleaned successfully
 df_taps.eventcode.value_counts()
 
-#df_events['in_seconds'] = list(df_events['sample']/1024)
-
 #### Combine EEG and Behavioural stuff ###
 # Compare event-information from EEG with events of behavioural data (of this pair):
 df_pair = behvaioural_df_alpha[behvaioural_df_alpha.pair == int(pair)]
@@ -151,13 +147,12 @@ df_pair.to_csv(path_csv+'taps_from_Behav_{}.csv'.format(pair))
 df_pair = df_pair.sort_values(by = ['trial', 'ttap3'], ignore_index = True)
 df_pair.reset_index(inplace=True, drop=True)
 
-df_pair[:10]
-df_taps[:10]
 df_taps_alpha = df_taps
 df_taps_alpha['alpha'] = df_pair['alpha_lin']
 #df_taps_alpha[df_taps_alpha['alpha']>180]
 
 # create events-array, where the 2nd column is filled with alphas
 events_alpha = pd.merge(df_events, df_taps_alpha, on = ['sample','eventcode'], how='left')
-events_alpha.drop(['eventname_y','eventname_x','index'],axis = 1, inplace = True)
-events_alpha.to_csv('events_forMNE_{}.csv'.format(pair))
+events_alpha.drop(['eventname_x','index'],axis = 1, inplace = True)
+events_alpha.rename(columns = {'eventname_y': 'eventname'},inplace = True)
+events_alpha.to_csv(path_csv+'events_forMNE_{}.csv'.format(pair))
