@@ -17,7 +17,7 @@ def calculate_alpha(df):
 
     # calculate the inter-person difference P(x) T(n) - P(y) T(n)
     # from both subjects' perspectives
-    df.sort_values(['trial', 'tapnr'], inplace=True)
+    df = df.sort_values(['trial', 'tapnr'])
     df['diff_inter'] = df['ttap'].diff()
     df.iloc[::2, df.columns.get_loc('diff_inter')] = df['ttap'].diff(-1)
 
@@ -94,7 +94,7 @@ def remove_ghost_triggers(df):
     # split the tap dataframe up for each subject
     for subj in [1,2]:
         subj_df = df[df['event_name'].str.startswith("s" + str(subj))]
-        subj_df.sort_values(['sample'])
+        subj_df = subj_df.sort_values(['sample'])
     
     
         # look only at the indices and event codes from one person
@@ -135,8 +135,8 @@ def join_event_dfs(event_df, behavioral_df):
     """Join a behavioral and an event dataframe."""
     
     # sort both dataframes after trial, subject, tap
-    event_df.sort_values(['event_trial', 'event_name'])
-    behavioral_df.sort_values(['trial', 'subject', 'tapnr'])
+    event_df = event_df.sort_values(['event_trial', 'event_name'])
+    behavioral_df = behavioral_df.sort_values(['trial', 'subject', 'tapnr'])
     
     # reset the event df index to the behavioral df
     event_df.index = behavioral_df.index
@@ -146,7 +146,7 @@ def join_event_dfs(event_df, behavioral_df):
 
 def events_from_event_df(df):
     """Sort a combined event dataframe and return it to a mne-style numpy array."""
-    df.sort_values(['event_index'])
+    df = df.sort_values(['event_index'])
     events = np.vstack([df['sample'],
                         np.zeros(len(df)),
                         df['event_code']]).astype(int).T
