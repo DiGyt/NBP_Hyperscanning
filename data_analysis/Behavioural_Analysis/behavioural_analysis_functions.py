@@ -84,7 +84,7 @@ def get_alpha(df, subj_list, compatible):
                     ref_sub = ITIsub2
                 numerator = tmp_df['Delta'][tap]
                 denominator = ref_sub[tap] # sub1 as reference subject
-                idx = abs(numerator/ denominator * 360)
+                idx = abs(numerator/ denominator) * 360
                 idx_lin = abs((180 - abs(idx - 180)))
                 alpha.append(idx)
                 alpha_lin.append(idx_lin)
@@ -186,6 +186,7 @@ def clean_data(df):
         # store index of these trials to be eliminated later
         # first select all trial-numbers with "False" in x (subtracting all indices of trues from 300)
         trials_to_reject = list(set(np.arange(1,301)) - set(x[x].index))
+        print(pair, ':', len(trials_to_reject)/300)
         # find index of all rows of these trials
         find_index= pair_trial.trial.isin(trials_to_reject)
         to_be_excluded.append(list(find_index[find_index].index))
@@ -194,6 +195,6 @@ def clean_data(df):
 
     # remove trials with the respective index fro the df
     df_cleaned = df.drop(to_be_excluded, axis=0)
-    print('Percentage of discarded trials due to cleaing:', 1-len(df_cleaned)/len(df))
+    print('Percentage of discarded data due to cleaing:', 1-len(df_cleaned)/len(df))
 
     return df_cleaned

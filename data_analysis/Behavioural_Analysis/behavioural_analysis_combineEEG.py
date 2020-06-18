@@ -65,7 +65,7 @@ event_dict = dict(zip(event_descriptions ,event_lst))
 # 2.2. Look for events in raw
 #raw.info
 raw.annotations
-events = mne.find_events(raw)
+events = mne.find_events(raw, shortest_event=1)
 len(events)
 
 # 2.3 Create an array based on the found events that later relates all events found in raw to the respective event-name
@@ -98,6 +98,8 @@ df_events.columns= ('sample','eventcode','eventname')
 df_taps = df_events.dropna()
 df_taps.reset_index(inplace=True)
 df_taps.drop('index', axis = 1)
+
+
 # Look for ghost triggers:
 # create a window around each 18 tpas (i.e. one trial)
 # check of there are duplicate eventcodes (i.e. ghost triggers)
@@ -112,9 +114,8 @@ ghost_idx = []
 tmp = []
 #df_taps[1998:2017] ### save a ghost trigger
 idx = 0
-
 for i in range(300):
-    print(idx)
+    #print(idx)
     # Make a window around each trial (of 18 taps)
     window = df_taps[idx:idx+18]
     #window = df_taps[1998:2017]
@@ -128,6 +129,7 @@ for i in range(300):
     advance = True
     for potential_ghost in potential_ghosts_idx:
         if window.loc[potential_ghost].eventcode in ghost_events:
+            print(window.loc[potential_ghost], df_taps[df_taps.index == potential_ghost] )
             ghost_idx.append(potential_ghost)
             df_taps=df_taps.drop(potential_ghost).reset_index(drop = True)
             advance = False
