@@ -39,8 +39,35 @@ behvaioural_df.drop(['condition', 'player_start_first'], axis = 1, inplace = Tru
 
 # 2. Compute alpha synchronization measure, individual intertap-Interval (ITI) and tapping distance (Delta)
 behvaioural_df_alpha = get_alpha(behvaioural_df, subj_list, True)
+len(behvaioural_df_alpha[behvaioural_df_alpha['alpha_lin']>180])/len(behvaioural_df_alpha)
 #behvaioural_df_alpha2 = get_alpha(behvaioural_df, subj_list, False)
 ###########
+
+# Other celaning procedure: Discard trials associated with extreme synchronization values
+behvaioural_df_alpha_clean = clean_data(behvaioural_df_alpha)
+
+
+# 1st celaning procedure: Count trials where alpha_lin is bigger than 180
+lost_trials = pd.DataFrame(columns=['pair', 'invalid_trials_count', 'invalid_trials_inPercent'])
+lost_trials['pair'] = subj_list
+invalid_trials_count=[]
+invalid_trials_inPercent=[]
+
+for pair in subj_list:
+#pair =202
+    # 1. Create one df with only this pair
+    df_pair = behvaioural_df_alpha[behvaioural_df_alpha['pair'] == pair]
+    df_pair = df_pair.reset_index()
+    invalid_trials = list(df_pair[df_pair['alpha']>360].trial)
+    df_pair['valid']=df_pair.trial.isin(invalid_trials)
+    lost_trials['pair'] == pair
+    invalid_trials_count.append(df_pair['valid'].values.sum())
+    invalid_trials_inPercent.append(df_pair['valid'].values.sum()/5400*100)
+
+lost_trials['invalid_trials_count'] = invalid_trials_count
+lost_trials['invalid_trials_inPercent'] = invalid_trials_inPercent
+lost_trials.sort_values(['pair'])
+
 
 
 # 2.1 Delete all rows with "None" (all tap #9)

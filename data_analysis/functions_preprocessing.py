@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import mne
 
 BADS_DIR = op.join(op.dirname(__file__), "bads")
+BAD_AR_PATH = op.join(BADS_DIR, "bad_autoreject")
 BAD_CH_PATH = op.join(BADS_DIR, "bad_channels")
 BAD_COMP_PATH = op.join(BADS_DIR, "bad_components")
 BAD_SEG_PATH = op.join(BADS_DIR, "bad_segments")
@@ -221,6 +222,12 @@ def run_ica_and_save(raw, subj_id, block=True, **ica_kwargs):
 
     if inp in ("save", "s"):
         save_ica(ica, subj_id)
+        
+        
+def save_autoreject(ar, subj_id):
+    """Save an autoreject object to the predefined folder."""
+    ar_path = op.join(BAD_AR_PATH, subj_id + "-ar.hdf5")
+    ar.save(ar_path)
 
 
 # TODO: Check if this function should be put here or be executed in plain text

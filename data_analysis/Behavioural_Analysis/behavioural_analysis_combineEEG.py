@@ -27,6 +27,7 @@ len(behvaioural_df_alpha[behvaioural_df_alpha.alpha>360])/len(behvaioural_df_alp
 # behvaioural_df_alpha[(behvaioural_df_alpha['Delta']>5)&(behvaioural_df_alpha['alpha_lin']<180)]
 #behvaioural_df_alpha.to_csv('behvaioural_df_alpha.csv')
 
+###START from here for a new pair###
 #### EEG PART ###
 ## 1. Load and prepare tapping-related events-information from EEG all_files
 pair = input("Please Type in, which subject pair you want to clean.\n"
@@ -64,7 +65,7 @@ event_dict = dict(zip(event_descriptions ,event_lst))
 # 2.2. Look for events in raw
 #raw.info
 raw.annotations
-events = mne.find_events(raw)
+events = mne.find_events(raw, shortest_event=1)
 len(events)
 
 # 2.3 Create an array based on the found events that later relates all events found in raw to the respective event-name
@@ -99,7 +100,6 @@ df_taps.reset_index(inplace=True)
 df_taps.drop('index', axis = 1)
 
 
-
 # Look for ghost triggers:
 # create a window around each 18 tpas (i.e. one trial)
 # check of there are duplicate eventcodes (i.e. ghost triggers)
@@ -114,9 +114,8 @@ ghost_idx = []
 tmp = []
 #df_taps[1998:2017] ### save a ghost trigger
 idx = 0
-
 for i in range(300):
-    print(idx)
+    #print(idx)
     # Make a window around each trial (of 18 taps)
     window = df_taps[idx:idx+18]
     #window = df_taps[1998:2017]
@@ -130,6 +129,7 @@ for i in range(300):
     advance = True
     for potential_ghost in potential_ghosts_idx:
         if window.loc[potential_ghost].eventcode in ghost_events:
+            print(window.loc[potential_ghost], df_taps[df_taps.index == potential_ghost] )
             ghost_idx.append(potential_ghost)
             df_taps=df_taps.drop(potential_ghost).reset_index(drop = True)
             advance = False
@@ -138,8 +138,6 @@ for i in range(300):
 #df_taps_clean = df_taps.drop(ghost_idx).reset_index(drop = True)
 # Test if all ghost triggers have been cleaned successfully
 df_taps.eventcode.value_counts()
-
-#df_events['in_seconds'] = list(df_events['sample']/1024)
 
 #### Combine EEG and Behavioural stuff ###
 # Compare event-information from EEG with events of behavioural data (of this pair):
@@ -151,13 +149,12 @@ df_pair.to_csv(path_csv+'taps_from_Behav_{}.csv'.format(pair))
 df_pair = df_pair.sort_values(by = ['trial', 'ttap3'], ignore_index = True)
 df_pair.reset_index(inplace=True, drop=True)
 
-df_pair[:10]
-df_taps[:10]
 df_taps_alpha = df_taps
 df_taps_alpha['alpha'] = df_pair['alpha_lin']
 #df_taps_alpha[df_taps_alpha['alpha']>180]
 
 # create events-array, where the 2nd column is filled with alphas
 events_alpha = pd.merge(df_events, df_taps_alpha, on = ['sample','eventcode'], how='left')
-events_alpha.drop(['eventname_y','eventname_x','index'],axis = 1, inplace = True)
-events_alpha.to_csv('events_forMNE_{}.csv'.format(pair))
+events_alpha.drop(['eventname_x','index'],axis = 1, inplace = True)
+events_alpha.rename(columns = {'eventname_y': 'eventname'},inplace = True)
+events_alpha.to_csv(path_csv+'events_forMNE_{}.csv'.format(pair))
