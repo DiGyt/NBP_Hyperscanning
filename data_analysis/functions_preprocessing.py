@@ -56,6 +56,7 @@ def combine_raws(raw_1, raw_2):
     # copy the objects to not overwrite them
     raw_1, raw_2 = raw_1.copy(), raw_2.copy()
 
+
     # create a name mapping funtion to generate distinguishable channel names
     def create_ch_mapping(ch_names, name_addition):
         ch_mapping = {}
@@ -66,11 +67,11 @@ def combine_raws(raw_1, raw_2):
     # create the renaming channel maps for both subject
     ch_map1 = create_ch_mapping(AMP1_CH_SET, "sub1")
     ch_map2 = create_ch_mapping(AMP1_CH_SET, "sub2")
-
+    
     # rename the channels
     raw_1.rename_channels(ch_map1)
     raw_2.rename_channels(ch_map2)
-
+    
     # drop the common channels from one file
     raw_1.drop_channels(COMMON_CH_SET)
 

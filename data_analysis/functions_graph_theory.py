@@ -83,6 +83,22 @@ def weighted_small_world_coeff(matrix):
     return (C / C_rand) / (L / L_rand)
 
 
+def epochs_weighted_small_world_coeff(epoch_matrix):
+    """Calculate the weighted small world coeff. of a epoched connectivity matrix.
+    The epoch_matrix must be of shape (n_epochs, n_chans, n_chans, n_freqs)"""
+    n_epochs = epoch_matrix.shape[0]
+    n_freqs = epoch_matrix.shape[-1]
+    small_world_coeffs = np.empty((n_epochs, n_freqs))
+    
+    # calculate the small worldedness for each epoch and frequency.
+    for ep_idx in range(n_epochs):
+        for freq_idx in range(n_freqs):
+            cur_mat = epoch_matrix[ep_idx, :, :, freq_idx]
+            small_world_coeffs[ep_idx, freq_idx] = weighted_small_world_coeff(cur_mat)
+    
+    return small_world_coeffs
+
+
 # Other graph measures
 def weighted_global_efficiency(matrix):
     """The weighted global efficiency is closely related to the characteristic path length."""
