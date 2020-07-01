@@ -30,7 +30,7 @@ AMP2_CH_SET = ['FT9', 'FT10', 'TPP9h', 'TPP10h', 'PO9', 'PO10', 'P9', 'P10',
               'PPO10h', 'POO9h', 'POO3h', 'POO4h', 'POO10h', 'OI1h', 'OI2h']
 COMMON_CH_SET = ['BIP1', 'BIP2', 'BIP3', 'BIP4', 'AUX1', 'AUX2', 'AUX3',
                  'AUX4', 'BIP5', 'BIP6', 'BIP7', 'BIP8', 'AUX5', 'AUX6',
-                 'AUX7', 'STI 014']
+                 'AUX7', 'STI 014']  # EOG 1 : BIP1, EOG 2: BIP 5
 
 ANNOTATION_TYPES = ["BAD", "BAD_EOG", "BAD_ECG", "BAD_ELEC", "BAD_MUSC",
                     "BAD_MOVE"]
@@ -38,14 +38,25 @@ ANNOTATION_TYPES = ["BAD", "BAD_EOG", "BAD_ECG", "BAD_ELEC", "BAD_MUSC",
 
 def split_raws(raw):
     """Savely split up one raw file into two with adequate channel names."""
+
     raw_1 = raw.copy().pick_channels(np.append(AMP1_CH_SET, COMMON_CH_SET),
                                     ordered=True)
     raw_2 = raw.copy().pick_channels(np.append(AMP2_CH_SET, COMMON_CH_SET),
                                         ordered=True)
+
+    # map channel set 2 to channel set 1
     ch_mapping = {}
     for ch1_name, ch2_name in zip(AMP1_CH_SET, AMP2_CH_SET):
         ch_mapping[ch2_name] = ch1_name
     raw_2.rename_channels(ch_mapping)
+    
+    # rereference both to Cz (raw 2 must be rereferced)
+    raw_1.set_eeg_reference(['Cz'])
+    raw_2.set_eeg_reference(['Cz'])
+    
+    #add the EOG channels for each recording
+    raw_1.set_channel_types({"BIP1": "eog"})
+    raw_2.set_channel_types({"BIP5": "eog"})
 
     return raw_1, raw_2
 
@@ -55,7 +66,7 @@ def combine_raws(raw_1, raw_2):
 
     # copy the objects to not overwrite them
     raw_1, raw_2 = raw_1.copy(), raw_2.copy()
-
+    
 
     # create a name mapping funtion to generate distinguishable channel names
     def create_ch_mapping(ch_names, name_addition):
@@ -81,6 +92,9 @@ def combine_raws(raw_1, raw_2):
     # merge the eeg data, info and annotations into one file
     raw_1 = raw_1.add_channels([raw_2])
     raw_1.set_annotations(new_annotations)
+    
+    # reenter raw 1's eog channel as eog channel
+    raw_1.set_channel_types({"BIP1": "eog"})
 
     del raw_2
     return raw_1
@@ -149,7 +163,7 @@ def mark_bads_and_save(raw, subj_id, sensor_map=False,
     save_bads(raw, subj_id)
 
 
-def run_ica(raw, subj_id, block=True, **ica_kwargs):
+def run_ica(raw, subj_id, block=True, picks=None, reject=None, **ica_kwargs):
     """Runs an ICA, and plots the Components."""
     ica_path = op.join(BAD_COMP_PATH, subj_id + "-ica.fif")
 
@@ -164,7 +178,7 @@ def run_ica(raw, subj_id, block=True, **ica_kwargs):
         ica = mne.preprocessing.read_ica(ica_path)
     else:
         ica = mne.preprocessing.ICA(**ica_kwargs)
-        ica.fit(raw, picks=None)
+        ica.fit(raw, picks=picks, reject=reject)
 
     # plot the ica components
     ica.plot_components()
