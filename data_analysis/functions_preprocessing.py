@@ -61,19 +61,19 @@ def split_raws(raw):
     return raw_1, raw_2
 
 
+def create_ch_mapping(ch_names, name_addition):
+    """Create a name mapping funtion to generate distinguishable channel names."""
+    ch_mapping = {}
+    for ch_name in ch_names:
+        ch_mapping[ch_name] = name_addition + "_" + ch_name
+    return ch_mapping
+
+
 def combine_raws(raw_1, raw_2):
     """Savely combine two raw files to one adding up their eeg channels."""
 
     # copy the objects to not overwrite them
     raw_1, raw_2 = raw_1.copy(), raw_2.copy()
-    
-
-    # create a name mapping funtion to generate distinguishable channel names
-    def create_ch_mapping(ch_names, name_addition):
-        ch_mapping = {}
-        for ch_name in ch_names:
-            ch_mapping[ch_name] = name_addition + "_" + ch_name
-        return ch_mapping
 
     # create the renaming channel maps for both subject
     ch_map1 = create_ch_mapping(AMP1_CH_SET, "sub1")
@@ -98,6 +98,44 @@ def combine_raws(raw_1, raw_2):
 
     del raw_2
     return raw_1
+
+
+def split_epochs(epochs):
+    """Savely split up one epochs file into two with adequate channel names."""
+
+    epochs_1 = epochs.copy().pick_channels([ch for ch in epochs.ch_names if ch[:4] == "sub1"],
+                                           ordered=True)
+    epochs_2 = epochs.copy().pick_channels([ch for ch in epochs.ch_names if ch[:4] == "sub2"],
+                                           ordered=True)
+    
+    # rename the channels
+    short_ch_map = {ch: ch[5:] for ch in epochs.ch_names}
+    epochs_1.rename_channels({key:val for key, val in short_ch_map.items() if key[:4] == "sub1"})
+    epochs_2.rename_channels({key:val for key, val in short_ch_map.items() if key[:4] == "sub2"})
+
+    return epochs_1, epochs_2
+
+
+def combine_epochs(epochs_1, epochs_2):
+    """Savely combine two epochs files to one adding up their eeg channels."""
+
+    # copy the objects to not overwrite them
+    epochs_1, epochs_2 = epochs_1.copy(), epochs_2.copy()
+    
+    # create the renaming channel maps for both subject
+    ch_map1 = create_ch_mapping(AMP1_CH_SET, "sub1")
+    ch_map2 = create_ch_mapping(AMP1_CH_SET, "sub2")
+    
+    # rename the channels
+    epochs_1.rename_channels(ch_map1)
+    epochs_2.rename_channels(ch_map2)
+    
+
+    # merge the eeg data, info and annotations into one file
+    epochs_1 = epochs_1.add_channels([epochs_2])
+    
+    del epochs_2
+    return epochs_1
 
 
 def mark_bads(raw, subj_id, sensor_map=False,
@@ -238,19 +276,30 @@ def run_ica_and_save(raw, subj_id, block=True, **ica_kwargs):
     if inp in ("save", "s"):
         save_ica(ica, subj_id)
         
-        
+
+def load_ica(subj_id):
+    """Load an ICA object to the predefined folder."""
+    ica_path = op.join(BAD_COMP_PATH, subj_id + "-ica.fif")
+    return mne.preprocessing.read_ica(ica_path)
+    
+    
 def save_autoreject(ar, subj_id):
     """Save an autoreject object to the predefined folder."""
     ar_path = op.join(BAD_AR_PATH, subj_id + "-ar.hdf5")
     ar.save(ar_path)
+    
+
+def load_autoreject(subj_id):
+    """Load an autoreject object to the predefined folder."""
+    from autoreject import read_auto_reject
+    ar_path = op.join(BAD_AR_PATH, subj_id + "-ar.hdf5")
+    return read_auto_reject(ar_path)
 
 
 # TODO: Check if this function should be put here or be executed in plain text
 def preprocess_single_sub(raw, subj_id):
     """Performs all neccessary preprocessing steps on one single subject."""
 
-    # set the EEG reference. We use Cz as a reference
-    raw.set_eeg_reference(["Cz"])
 
     # set the EEG Montage. We use 64 chans from the standard 10-05 system.
     montage = mne.channels.make_standard_montage("standard_1005")
@@ -258,7 +307,7 @@ def preprocess_single_sub(raw, subj_id):
 
     # Apply high pass/low pass filter
     raw.filter(l_freq = 0.1, h_freq = 120) # using firwin
-    raw.notch_filter(freqs=[16.666666667, 50])  # bandstop train and AC
+    raw.notch_filter(freqs=[50])  # bandstop AC
 
     # mark the bad channels
     raw.load_bad_channels(op.join(BAD_CH_PATH, subj_id + "-bad_ch.csv"))
@@ -268,15 +317,12 @@ def preprocess_single_sub(raw, subj_id):
     annots = mne.read_annotations(annots_path)
     raw.set_annotations(annots)
 
-    # Perform ICA. Note that marked bad channels are automatically excluded
-    ica_path = op.join(BAD_COMP_PATH, subj_id + "-ica.fif")
-    ica = mne.preprocessing.read_ica(ica_path)
-
-    # apply ICA
-    ica.apply(raw)
+    # Load and apply ICA
+    ica = load_ica(subj_id)
+    raw = ica.apply(raw)
 
     # Interpolate bad channels
-    raw.interpolate_bads(reset_bads=True)
+    raw = raw.interpolate_bads(reset_bads=True)
 
     # Pick relevant channels:
     # raw.pick_channels() # TODO: define pick channel set here. Do we even need this anymore?
