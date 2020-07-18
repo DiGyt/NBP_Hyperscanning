@@ -111,5 +111,8 @@ venv.bak/
 **/eeg/*.tsv
 **/eeg/*.json
 
+# MAC DS store
+.DS_Store
+
 # Exclude entire virtual_env folders/files
 virtual_environment_setup/.virtualenvs/
