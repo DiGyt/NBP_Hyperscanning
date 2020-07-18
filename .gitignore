@@ -103,6 +103,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# MAC DS store
+.DS_Store
+
 # Exclude eeg-files from upload
 *.fif
 *.eeg
