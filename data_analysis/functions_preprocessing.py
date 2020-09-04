@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mne
 
-BADS_DIR = op.join(op.dirname(__file__), "bads")
+BADS_DIR = op.abspath("/net/store/nbp/projects/hyperscanning/study_project/marked_data")
 BAD_AR_PATH = op.join(BADS_DIR, "bad_autoreject")
 BAD_CH_PATH = op.join(BADS_DIR, "bad_channels")
 BAD_COMP_PATH = op.join(BADS_DIR, "bad_components")
