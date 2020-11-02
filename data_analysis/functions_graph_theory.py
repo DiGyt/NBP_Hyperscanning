@@ -1,6 +1,97 @@
+import time
+import logging
+logging.basicConfig(format='%(asctime)s %(message)s')
+
 import numpy as np
+import networkx as nx
+
+def epochs_swi(epoch_matrix):
+    n_epochs = epoch_matrix.shape[0]
+    n_freqs = epoch_matrix.shape[-1]
+    small_worlds = np.zeros([n_epochs, n_freqs])
+    for epoch in range(n_epochs):
+        for freq in range(n_freqs):
+            progress = (epoch / n_epochs + freq / n_freqs / n_epochs) * 100
+            logging.warning("Progress: {} %".format(progress))
+            print("Progress: {} %".format(progress), flush=True)
+            
+            small_worlds[epoch, freq] = core_swi(epoch_matrix[epoch, :, :, freq], nrand=5)
+            
+    return small_worlds
 
 
+def core_swi(graph_matrix, nrand=10):
+    
+    # create an graph from the matrix
+    graph = nx.convert_matrix.from_numpy_array(graph_matrix)
+    
+    # create a container for the later small world references
+    small_worlds = []
+    for i in range(nrand):
+        rand_ref = nx.random_reference(graph, connectivity=True, seed=None)
+        latt_ref= nx.lattice_reference(graph, niter=1,D=None, connectivity=True, seed=None)
+        
+        # create all metrics: CPL&CC for observed/random/lattice
+        CPL = nx.average_shortest_path_length(graph, weight=None, method=None)
+        CPL_R = nx.average_shortest_path_length(rand_ref, weight=None, method=None)
+        CPL_L = nx.average_shortest_path_length(latt_ref, weight=None, method=None)
+        CC = nx.average_clustering(graph)
+        CC_R = nx.average_clustering(rand_ref)
+        CC_L = nx.average_clustering(latt_ref)
+        
+        # calculate SWI
+        SWI = ( (CPL - CPL_L) / (CPL_R - CPL_L) )   *   ( (CC - CC_R) / (CC_L - CC_R) )
+        small_worlds.append(SWI)
+        
+    return np.mean(small_worlds)
+
+
+from joblib import Parallel, delayed
+def multi_small_world(epoch_matrix, n_jobs=4):
+    """Calculate the small world coefficient using parallel processing jobs
+    for separated epochs."""
+    parts = np.linspace(0, len(epoch_matrix), n_jobs + 1, dtype=int)
+    results = Parallel(n_jobs=n_jobs)(delayed(epochs_swi)(epoch_matrix[parts[i]:parts[i+1]]) for i in range(n_jobs))
+    return np.concatenate(results, axis=0)
+
+# Since we decided to rely on networkx, we won't have to use the rest of the functions
+######################################################################################   
+
+'''
+from multiprocessing import Pool
+def multi_small_world(epoch_matrix, n_jobs=4):
+    """Calculate the small world coefficient using parallel processing jobs
+    for separated epochs."""
+    parts = np.linspace(0, len(epoch_matrix), n_jobs + 1, dtype=int)
+    cuts = [epoch_matrix[parts[i]:parts[i+1]] for i in range(n_jobs)]
+    with Pool(n_jobs) as pool:
+        results = pool.map(epochs_small_world, cuts)
+    return np.concatenate(results, axis=0)   
+
+'''
+def epochs_small_world(epoch_matrix):
+    """Takes a time-frequency epoched connectivity matrix of shape
+    [epochs, channels, channels, frequencies] and returns a matrix
+    of small worldnesses over the epochs and frequency axes."""
+    n_epochs = epoch_matrix.shape[0]
+    n_freqs = epoch_matrix.shape[-1]
+    omegas = np.zeros([n_epochs, n_freqs])
+    for epoch in range(n_epochs):
+        for freq in range(n_freqs):
+            # monitor progress
+            progress = (epoch / n_epochs + freq / n_freqs / n_epochs) * 100
+            logging.warning("Progress: {} %".format(progress))
+            print("Progress: {} %".format(progress), flush=True)
+            
+            graph = nx.convert_matrix.from_numpy_array(epoch_matrix[epoch, :, :, freq])
+            time.sleep(0.1) # give the CPU rest and prevent it from freezing
+            omegas[epoch, freq] = nx.algorithms.smallworld.omega(graph, nrand=5)
+            
+            time.sleep(0.2) # give the CPU rest and prevent it from freezing
+                
+    return 1 - np.abs(omegas)
+
+    
 def weighted_shortest_path(matrix):
     """
     Calculate the shortest path lengths between all nodes in a weighted graph.
