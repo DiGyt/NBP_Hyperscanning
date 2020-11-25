@@ -19,13 +19,9 @@ from data_analysis.functions_preprocessing import \
 from data_analysis.functions_behavioral import \
     (create_event_df, remove_ghost_triggers, calculate_alpha,
      join_event_dfs, remove_outliers, events_from_event_df)
-from data_analysis.functions_connectivity import \
-    epochs_ispc, multi_ispc
-from data_analysis.functions_graph_theory import \
-    epochs_small_world, multi_small_world
 
 # number of cores to use for parallel processing (ramsauer pc should have 80 cores)
-n_jobs = 15
+n_jobs = 7
 
 subject_dir = "/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/mne_data/sourcedata/"
 behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/Behavioural_Analysis/BehaviouralData"
@@ -36,7 +32,7 @@ result_dir = "/net/store/nbp/projects/hyperscanning/study_project/results"
 
 
 # Perform the data analysis
-for subj_pair in ['202', '211']:  #['202','203','204','205','206','207','208','209','211','212']:
+for subj_pair in ['202','203','204','205','206','207','208','209','211','212']:
 
     subs_path = subject_dir + "sub-{0}/eeg/sub-{0}_task-hyper_eeg.fif".format(subj_pair)
     behav_path = op.join(behav_dir, "{0}.csv".format(subj_pair))
@@ -128,6 +124,12 @@ for subj_pair in ['202', '211']:  #['202','203','204','205','206','207','208','2
     
     epochs = epochs.drop(combined_rejects, reason="Autoreject")
     
+    
+    # save the dropped epochs
+    drop_list = [ind for ind, val in enumerate(epochs.drop_log[:300]) if val == ["Autoreject"]]
+    drop_fname = op.join(result_dir, "dropped_epochs", subj_pair + ".mat")
+    savemat(drop_fname, {"drop_list":drop_list})
+    
 
     
      # split the epochs to apply ICA and TFR transform
@@ -180,24 +182,24 @@ for subj_pair in ['202', '211']:  #['202','203','204','205','206','207','208','2
     epochs = combine_epochs(epochs_split[0], epochs_split[1])
     
     
-    # initialize containers to analyze later
-    phase_angles = {}
-    ispc_matrices = {}
-    small_worlds = {}
                          
     for condition in event_types:
     
         # Get the phase angles via a wavelet transform
         phases = mne.time_frequency.tfr_morlet(epochs[condition], freqs, cycles, output="phase",
                                                return_itc=False, average=False, n_jobs=n_jobs)
-        phase_angles[condition] = phases#[:8] # TODO: only here for debugging! remove again!
+        
+        # save the condition
+        fname = op.join(result_dir, "phase_angles", subj_pair + "_" + condition)
+        phases.save(fname)
+        del phases
         
     # subtract the baseline
-    phase_angles["early"].data -= phase_angles["baseline"].data
-    phase_angles["late"].data -= phase_angles["baseline"].data
+    #phase_angles["early"].data -= phase_angles["baseline"].data
+    #phase_angles["late"].data -= phase_angles["baseline"].data
     
     # delete some stuff to free some memory
-    del phase_angles["baseline"]
+    #del phase_angles["baseline"]
     del epochs
     del epochs_split
     del cur_eps
@@ -205,15 +207,4 @@ for subj_pair in ['202', '211']:  #['202','203','204','205','206','207','208','2
     del cur_cond_eps
     del raw_combined
     
-    # save the data
-    for condition in ["early", "late"]:
-        
-        fname = op.join(result_dir, "phase_angles", subj_pair + "_" + condition + ".hdf5")
-        h5f = h5py.File(fname, "w")
-        h5f.create_dataset(condition, data=phase_angles[condition].data)
-        h5f.close()
-            
-        savemat(op.join(result_dir, "phase_angles", subj_pair + "_times.mat"),
-                {"times":phase_angles[condition].times})
-        del phase_angles[condition]
-
+    

@@ -18,6 +18,7 @@ def epochs_swi(epoch_matrix, n_avg=1, n_iter=1):
             
             cur_mat = remove_self_edges(epoch_matrix[epoch, :, :, freq])
             small_worlds[epoch, freq] = weighted_sw_index(cur_mat, n_avg=n_avg, n_iter=n_iter)
+            time.sleep(0.1)
     return small_worlds
 
 
@@ -27,7 +28,6 @@ def multi_small_world(epoch_matrix, n_jobs=4, n_avg=1, n_iter=1):
     parts = np.linspace(0, len(epoch_matrix), n_jobs + 1, dtype=int)
     results = Parallel(n_jobs=n_jobs)(delayed(epochs_swi)(epoch_matrix[parts[i]:parts[i+1]],
                                                           n_avg=n_avg, n_iter=n_iter) for i in range(n_jobs))
-    (delayed(processInput)(i,j) for i,j in zip(a,b))
     return np.concatenate(results, axis=0)
 
 
