@@ -18,10 +18,10 @@ result_dir = "/net/store/nbp/projects/hyperscanning/study_project/results"
 
 # define which ISPCS to calculate
 #['202','203','204','205','206','207','208','209','211','212']
-subj_pairs = ['202']
+subj_pairs = ['211']
 
 # conditions ["early", "late"]
-conditions = ["late"]
+conditions = ["early"]
 
 # number of cores to use for parallel processing (ramsauer pc should have 80 cores)
 n_jobs = 7
