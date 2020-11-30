@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from os.path import expanduser
 
-######### DIRKS ALPHA & CLEANING ########
+######### APPLY DIRKS ALPHA & CLEANING ########
 
 # Set defaults
 data_path = "/Users/anne/github/NBP_Hyperscanning/data_analysis/Behavioural_Analysis/BehaviouralData"
@@ -27,12 +27,15 @@ all_files = glob.glob(os.path.join(data_path, "*.csv"))
 df_from_each_file = (pd.read_csv(f) for f in all_files)
 df = pd.concat(df_from_each_file, ignore_index=True)
 
+# create a list with all pairs
 pair_list = list(df['pair'].unique())
+
 # Eliminate Subjects with invalid datasets (from subj_list and from df)
 pairs_with_invalid_data = [200, 210, 213, 214, 299]
 pair_list = [item for item in pair_list if item not in pairs_with_invalid_data]
 df = df[np.logical_not(df["pair"].isin(pairs_with_invalid_data))]
 
+#eliminate not needed columns for a better overview
 df.drop(['condition','player_start_first', 'jitter'], axis = 1, inplace = True)# Function to calculate alph from both subject's perspectives
 '''
 #TEST SORTING ALGORITHM
@@ -65,33 +68,63 @@ def calculate_alpha(df):
     # We could also instead remove these trials by removing the `% 360`, and cropping all df["alpha"] > 360 afterwards.
 
     return df
+
+# Create a new df with all synchronization measures (i.e. alpha & inter-/intra tap distances)
 df_alpha = pd.DataFrame(columns=df.columns)
 
-# calculate alpha and ITI for all subs
+# Calculate alpha and ITI for all subs
 for pair in pair_list:
-    print(pair)
     pairwise_df = df[df.pair == pair]
     df_alpha_pair = calculate_alpha(pairwise_df)
     df_alpha = pd.concat([df_alpha, df_alpha_pair])
     #sort tapping-times according to their temporal order
     pairwise_df = pairwise_df.sort_values(by = ['trial', 'ttap'])
-
-
 df_alpha.reset_index(inplace = True, drop = True)
-df_alpha[df_alpha.pair ==203]
-df_alpha.to_csv('df_alpha_temporal_ordewr.csv')
-# save time of first and last tap per trial in dataframe
+
+# Save time of first and last tap per trial in dataframe
 first_tap = df_alpha.index - df_alpha.index[df_alpha.index%18]
 df_alpha["first_tap"] = df_alpha["ttap"][first_tap].to_numpy()
 last_tap = df_alpha.index - df_alpha.index[(df_alpha.index%18)] +17
 df_alpha["last_tap"] = df_alpha["ttap"][last_tap].to_numpy()
 
-# select those alpha values that occur within the range of first tap + 1.5s and last tap - 1.5s (of each trial)
-df_early = df_alpha[df_alpha["ttap"] <= df_alpha.first_tap+1.5 ]#["alpha_lin"]#.plot.hist(bins=bin_size)
-df_late = df_alpha[df_alpha["ttap"] >= df_alpha.last_tap-1.5 ]#["alpha_lin"]#.plot.hist(bins=bin_size)
-###TODO: Solve how to deal with NaNs for all tapnr.9 
-df = df_alpha
+# CLEAN DATA:
+# Now, we should select the alpha-values according to the rule of Novembre et. al,
+# i.e.  odd trials: alpha from sub1 perspective
+#       even trials: alpha from sub2 perspective
+df_alpha = df_alpha[df_alpha["trial"]%2 != df_alpha["subject"] - 1]
 
+# Remove all trials where one person tapped twice before the other person did
+lost_late_trials = df_alpha[df_alpha["alpha"] > 360][["pair","trial"]]
+print("percentage of lost late trials after removing double taps:", round(len(lost_late_trials)/len(df_alpha)*100,2), "%")
+df_alpha = df_alpha[df_alpha["alpha"] <= 360]
+df_alpha.to_csv('cleaned_data.csv')
+
+# Split data into early/late segments
+# Select those alpha values that occur within the range of first tap + 1.5s and last tap - 1.5s (of each trial)
+df_early = df_alpha[df_alpha["ttap"] <= df_alpha.first_tap+1.5 ][["pair","trial","alpha_lin"]]#["alpha_lin"]#.plot.hist(bins=bin_size)
+df_early.reset_index(inplace = True, drop = True)
+df_late = df_alpha[df_alpha["ttap"] >= df_alpha.last_tap-1.5 ][["pair","trial","alpha_lin"]]
+df_late.reset_index(inplace = True, drop = True)
+
+#["alpha_lin"]#.plot.hist(bins=bin_size)
+
+# create (early/late) df with alpha-average per trial which can then be correlated with EEG early/late epochs
+mean_alpha_early = df_early.groupby(['pair','trial']).alpha_lin.mean().reset_index()
+mean_alpha_late = df_late.groupby(['pair','trial']).alpha_lin.mean().reset_index()
+# merge both dataframes into one
+mean_alpha = mean_alpha_early.merge(mean_alpha_late, on=["pair","trial"],suffixes=("_early","_late"))
+
+# save all as csv
+df_alpha.to_csv('df_alpha_temporal_order.csv')
+df_early.to_csv('alpha_early.csv')
+df_late.to_csv('alpha_late.csv')
+mean_alpha.to_csv('mean_alpha.csv')
+
+
+
+
+
+######### REMOVE OUTLIERS (not recommended due to huge lost of data) #######
 
 def remove_outliers(df, exclude_stddev):
     """Remove all trials where the average alpha is `exclude_sttdev` sttdevs larger or
