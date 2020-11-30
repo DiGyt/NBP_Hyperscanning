@@ -56,7 +56,7 @@ behvaioural_df_alpha.describe()
 behvaioural_df_alpha[(behvaioural_df_alpha['Delta']>5)&(behvaioural_df_alpha['alpha_lin']<180)]
 
 # 3. Clean the data:
-# Discard trials associated with extreme syn- chronization values
+# Discard trials associated with extreme synchronization values
 # i.e. when the average of the eight synchrony values was higher or lower than
 # 2 s.d. from the participant’s mean synchrony (see Novembre 2012)
 behvaioural_df_alpha_cleaned = clean_data(behvaioural_df_alpha)

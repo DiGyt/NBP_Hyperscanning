@@ -158,7 +158,7 @@ def eliminate_ghost_triggers(df_taps):
             for i in potential_ghosts_idx:
                 if window.loc[i].eventcode in ghosts:
                     ghost_idx.append(i)
-                    df_taps.drop(i).reset_index(iplace = True, drop = True)
+                    df_taps.drop(i).reset_index(inplace = True, drop = True)
             idx+= 18
 
     # ELiminate ghost-triggers from df with the taps

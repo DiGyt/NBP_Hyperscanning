@@ -7,19 +7,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from os.path import expanduser
 
-path = os.getcwd() + '/data_analysis'
+path = os.getcwd() + '/data_analysis/Behavioural_Analysis'
 # add functions script file path to sys path
 sys.path.append(path)
-from Behavioural_Analysis.behavioural_analysis_functions import (get_alpha, clean_data)#, eliminate_ghost_triggers)
-from Behavioural_Analysis.functions_preprocessing_mne20 import \
+from behavioural_analysis_functions import (get_alpha, clean_data)#, eliminate_ghost_triggers)
+from functions_preprocessing_mne20 import \
     (split_raws, mark_bads, save_bads, run_ica, save_ica)
 
 #%matplotlib qt
 
 ### Behavioural PART ####
 # Load Behavioural Data (all pairs in one df with alpha values)
-path_csv = path + '/Behavioural_Analysis/Behvaioural_Analysis_Data/'
-behvaioural_df_alpha = pd.read_csv(path_csv + "Behavioural_Data_Alpha.csv", index_col=0)
+behvaioural_df_alpha = pd.read_csv("Behvaioural_Analysis_Data/Behavioural_Data_Alpha.csv", index_col=0)
 # 2.1 Delete all rows with "None" (all tap #9)
 #behvaioural_df_alpha = behvaioural_df_alpha.dropna()
 len(behvaioural_df_alpha[behvaioural_df_alpha.alpha>360])/len(behvaioural_df_alpha)
