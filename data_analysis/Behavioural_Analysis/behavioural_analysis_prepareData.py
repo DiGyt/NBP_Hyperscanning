@@ -93,6 +93,10 @@ df_alpha["last_tap"] = df_alpha["ttap"][last_tap].to_numpy()
 #       even trials: alpha from sub2 perspective
 df_alpha = df_alpha[df_alpha["trial"]%2 != df_alpha["subject"] - 1]
 
+# FOR LATER PLOTS
+bin_size = int(np.ceil(np.sqrt(len(df_alpha[df_alpha["alpha"] <= 360]["alpha_lin"]))))
+#######
+
 # Remove all trials where one person tapped twice before the other person did
 lost_late_trials = df_alpha[df_alpha["alpha"] > 360][["pair","trial"]]
 print("percentage of lost late trials after removing double taps:", round(len(lost_late_trials)/len(df_alpha)*100,2), "%")
@@ -120,9 +124,39 @@ df_early.to_csv('alpha_early.csv')
 df_late.to_csv('alpha_late.csv')
 mean_alpha.to_csv('mean_alpha.csv')
 
+############ PLOTS ####################
+from scipy import stats
+# get the distribution of valid alphas
+
+df_alpha["alpha_lin"].plot.hist(bins=bin_size)
+plt.xlabel('Alpha (linearised) [degrees]')
+plt.ylabel('Occurance')
+plt.title('All valid alphas (alpha<360°)')
+# create fig object
+alpha_all = plt.gcf()
+# save fig object
+#pickle.dump(alpha_all, open(behav_plots + "alpha_all.p", 'wb'))
+
+mean = np.around(np.mean(df_alpha["alpha_lin"]),decimals=2)
+median = np.around(np.median(df_alpha["alpha_lin"]),decimals=2)
+mode,xyz3 = stats.mode(np.around(df_alpha["alpha_lin"], decimals=3))
+
+names = ["mode", "median", "mean"]
+colors = ['red', 'blue', 'green']
+measurements = [mode, median, mean]
 
 
+for measurement, name, color in zip(measurements, names, colors):
+    plt.vlines(x=measurement,ymin=0,ymax=1050, linestyle='--', linewidth=2.5,
+                label='{0} at {1}'.format(name, measurement), colors=color)
+plt.legend();
+df_early["alpha_lin"].plot.hist(bins=bin_size)
+df_late["alpha_lin"].plot.hist(bins=bin_size)
 
+plt.suptitle('Early vs. late taps')
+plt.legend(['First 1.5s','Last 1.5s'])
+plt.xlabel('Alpha (linearised) [degrees]')
+plt.ylabel('Occurance')
 
 ######### REMOVE OUTLIERS (not recommended due to huge lost of data) #######
 
