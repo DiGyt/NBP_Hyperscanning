@@ -98,16 +98,26 @@ bin_size = int(np.ceil(np.sqrt(len(df_alpha[df_alpha["alpha"] <= 360]["alpha_lin
 #######
 
 # Remove all trials where one person tapped twice before the other person did
-lost_late_trials = df_alpha[df_alpha["alpha"] > 360][["pair","trial"]]
-print("percentage of lost late trials after removing double taps:", round(len(lost_late_trials)/len(df_alpha)*100,2), "%")
+lost_taps = df_alpha[df_alpha["alpha"] > 360][["pair","trial"]]
+lost_taps = lost_taps.drop_duplicates(subset=['pair','trial'])
+
+for pair in pair_list:
+    lost_taps_tmp = lost_taps[lost_taps["pair"]==pair]["trial"]
+    lost_taps_tmp.to_csv('{}_lost_taps.csv'.format(pair))
+
+print("percentage of lost trials after removing double taps:", round(len(lost_taps)/len(df_alpha)*100,2), "%")
 df_alpha = df_alpha[df_alpha["alpha"] <= 360]
+df_alpha['double_taps'] = df_alpha["alpha"] > 360
+df_alpha[:20]
+
+
 df_alpha.to_csv('cleaned_data.csv')
 
 # Split data into early/late segments
 # Select those alpha values that occur within the range of first tap + 1.5s and last tap - 1.5s (of each trial)
-df_early = df_alpha[df_alpha["ttap"] <= df_alpha.first_tap+1.5 ][["pair","trial","alpha_lin"]]#["alpha_lin"]#.plot.hist(bins=bin_size)
+df_early = df_alpha[df_alpha["ttap"] <= df_alpha.first_tap+1.5 ][["pair","trial","alpha_lin","double_taps"]]#["alpha_lin"]#.plot.hist(bins=bin_size)
 df_early.reset_index(inplace = True, drop = True)
-df_late = df_alpha[df_alpha["ttap"] >= df_alpha.last_tap-1.5 ][["pair","trial","alpha_lin"]]
+df_late = df_alpha[df_alpha["ttap"] >= df_alpha.last_tap-1.5 ][["pair","trial","alpha_lin","double_taps"]]
 df_late.reset_index(inplace = True, drop = True)
 
 #["alpha_lin"]#.plot.hist(bins=bin_size)
@@ -117,6 +127,8 @@ mean_alpha_early = df_early.groupby(['pair','trial']).alpha_lin.mean().reset_ind
 mean_alpha_late = df_late.groupby(['pair','trial']).alpha_lin.mean().reset_index()
 # merge both dataframes into one
 mean_alpha = mean_alpha_early.merge(mean_alpha_late, on=["pair","trial"],suffixes=("_early","_late"))
+mean_alpha[:50]
+
 
 # save all as csv
 df_alpha.to_csv('df_alpha_temporal_order.csv')
