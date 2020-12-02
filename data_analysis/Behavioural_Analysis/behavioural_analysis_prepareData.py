@@ -11,7 +11,7 @@ from os.path import expanduser
 
 # Set defaults
 data_path = "/Users/anne/github/NBP_Hyperscanning/data_analysis/Behavioural_Analysis/BehaviouralData"
-plots_path = './plots/'
+save_behavioural_data_path = './Users/anne/github/NBP_Hyperscanning/BehavriouralData_Prepared/'
 
 # make folder for plots
 os.makedirs(os.path.dirname(plots_path), exist_ok=True)
@@ -80,6 +80,8 @@ for pair in pair_list:
     #sort tapping-times according to their temporal order
     pairwise_df = pairwise_df.sort_values(by = ['trial', 'ttap'])
 df_alpha.reset_index(inplace = True, drop = True)
+
+len(df_alpha.query('alpha_lin > 180 & alpha > 360'))/len(df_alpha)
 
 # Save time of first and last tap per trial in dataframe
 first_tap = df_alpha.index - df_alpha.index[df_alpha.index%18]
