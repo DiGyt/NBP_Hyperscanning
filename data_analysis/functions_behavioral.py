@@ -26,7 +26,7 @@ def calculate_alpha(df):
 
     # calculate alpha and linearized alpha for all taps
     df['alpha'] = abs(df['diff_inter'] / df['diff_intra']) * 360
-    df['alpha_lin'] = abs(180 - abs(df['alpha'] % 360 - 180))
+    df['alpha_lin'] = abs(180 - abs(df['alpha'] - 180)) # abs(180 - abs(df['alpha'] % 360 - 180))
     # TODO: discuss the linearization/ asynchronous trials. I found that there are single taps where the circular measure
     # is larger than 360°
     # This means theoretically that the interperson diff is way bigger than the intra person diff, meaning that P1 made
