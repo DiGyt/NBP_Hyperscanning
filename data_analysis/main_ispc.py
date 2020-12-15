@@ -22,7 +22,7 @@ subj_pairs = ['203']
 conditions = ["early"]
 
 # number of cores to use for parallel processing (ramsauer pc should have 80 cores)
-n_jobs = 31
+n_jobs = 7
 
 subject_dir = "/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/mne_data/sourcedata/"
 behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/Behavioural_Analysis/BehaviouralData"
