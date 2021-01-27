@@ -1,3 +1,9 @@
+# functions_connectivity.py
+#
+# A collection of functions used to compute our small-world
+# and other graph theoretical measures
+#
+
 import time
 import logging
 logging.basicConfig(format='%(asctime)s %(message)s')

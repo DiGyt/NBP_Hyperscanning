@@ -1,3 +1,11 @@
+# main_swi.py
+#
+# Load the ispc data created for each subject pair, and
+# calculate the small world index from it. This file was
+# used for the final analysis (after main_phases.py and
+# main_swi.py).
+#
+
 import sys
 import os.path as op
 module_path = op.abspath(op.join('..'))
@@ -13,7 +21,7 @@ from data_analysis.functions_graph_theory import \
     multi_small_world, epochs_swi, weighted_sw_index, lattice_reference, remove_self_edges
 
 subject_dir = "/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/mne_data/sourcedata/"
-behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/Behavioural_Analysis/BehaviouralData"
+behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/behavioral_data"
 result_dir = "/net/store/nbp/projects/hyperscanning/study_project/results"
 
 # define which ISPCS to calculate

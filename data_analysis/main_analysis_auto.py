@@ -1,3 +1,11 @@
+# main_analysis_auto.py
+#
+# This is a more up-to-date version of the main analysis, applying automated
+# preprocessing and further functions. However, the final analysis was cal-
+# culated with main_phases.py, main_ispc.py and main_swi.py, since computational
+# load was to heavy to calculate everything in a single file.
+#
+
 import sys
 import os.path as op
 module_path = op.abspath(op.join('..'))
@@ -28,7 +36,7 @@ from data_analysis.functions_graph_theory import \
 n_jobs = 15
 
 subject_dir = "/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/mne_data/sourcedata/"
-behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/Behavioural_Analysis/BehaviouralData"
+behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/behavioral_data"
 result_dir = "/net/store/nbp/projects/hyperscanning/study_project/results"
 
 

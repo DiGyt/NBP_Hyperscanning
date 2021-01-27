@@ -1,7 +1,9 @@
-# This is our preprocessing script.
-# We loop over all data, clean stuff and then perform the ICA
-# During this process, we save all bad components segments and channels
-
+# main_preprocessing.py
+#
+# Manual preprocessing script to annotate data and mark ICA components.
+# This file might not be up to date, as the actual cleaning was performed
+# with main_preprocessing_auto.ipynb
+#
 import os.path as op
 
 import mne

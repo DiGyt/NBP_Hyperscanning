@@ -1,3 +1,13 @@
+# main_phases.py
+#
+# Load the raw EEG data, apply preprocessing and perform a
+# wavelet transform to obtain the phase vectors for each pair.
+
+# This file was used for the final analysis (using
+# preprocessed data from main_preprocessing_auto.ipynb). Data
+# from main_phases.py was then used in main_ispc.py and main_swi.py
+#
+
 import sys
 import os.path as op
 module_path = op.abspath(op.join('..'))
@@ -24,7 +34,7 @@ from data_analysis.functions_behavioral import \
 n_jobs = 7
 
 subject_dir = "/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/mne_data/sourcedata/"
-behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/Behavioural_Analysis/BehaviouralData"
+behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/behavioral_data"
 result_dir = "/net/store/nbp/projects/hyperscanning/study_project/results"
 
 
@@ -109,18 +119,6 @@ for subj_pair in ['202','203','204','205','206','207','208','209','211','212']:
         
         rejects.append(np.logical_or(np.logical_or(cond_rejects[0], cond_rejects[1]), cond_rejects[2]))
     combined_rejects = np.hstack([np.logical_or(rejects[0], rejects[1]) for i in range(3)])
-
-    
-    #rejects = np.hstack([[load_autoreject("sub-{0}_p-{1}-{2}".format(subj_pair, i, condition)).get_reject_log(split_epochs(epochs[condition])[i]).bad_epochs for i in range(2)] for condition in event_types])
-    #combined_rejects = np.logical_or(rejects[0], rejects[1])
-    
-    # apply the heuristic to reject all parts of a trial if 2 or more epochs out of
-    # baseline, early, and late, are bad.
-    #bad_trials = np.vstack([combined_rejects[:300],
-    #                        combined_rejects[300:600],
-    #                        combined_rejects[600:]])
-    #bad_trial_sets = np.sum(bad_trials, axis=0) >= 1
-    #combined_rejects = np.hstack([bad_trial_sets] * 3)
     
     epochs = epochs.drop(combined_rejects, reason="Autoreject")
     
@@ -193,10 +191,6 @@ for subj_pair in ['202','203','204','205','206','207','208','209','211','212']:
         fname = op.join(result_dir, "phase_angles", subj_pair + "_" + condition)
         phases.save(fname)
         del phases
-        
-    # subtract the baseline
-    #phase_angles["early"].data -= phase_angles["baseline"].data
-    #phase_angles["late"].data -= phase_angles["baseline"].data
     
     # delete some stuff to free some memory
     #del phase_angles["baseline"]

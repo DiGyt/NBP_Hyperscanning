@@ -1,6 +1,13 @@
+# functions_connectivity.py
+#
+# A collection of functions used to compute our connectivity measures
+#
+
 import time
 import logging
 logging.basicConfig(format='%(asctime)s %(message)s')
+
+from joblib import Parallel, delayed
 
 import numpy as np
 import scipy.signal
@@ -9,29 +16,11 @@ import numexpr as ne
 import mne
 from mne.time_frequency import tfr_morlet
 
-'''
-def core_ispc(phase_diff, times):
-  """A simple implementation of the ISPC formula as described by Cohen."""
-  sums = np.zeros_like(phase_diff[0], dtype= np.complex64)
-  for t in range(len(phase_diff)):
-    product_term = phase_diff[t] * times[t]
-    sums += np.exp(1j * product_term) # .astype(np.complex64)
-  return  np.abs(sums / len(phase_diff))
-'''
+
 def core_ispc(phase_diff, times):
   """A simple implementation of the ISPC formula as described by Cohen."""
   return np.abs(np.sum([np.exp(1j * (phase_diff[t] * times[t])) for t in range(len(phase_diff))]) / len(phase_diff))
 
-'''
-def core_ispc(phase_diff, times):
-  """A simple implementation of the ISPC formula as described by Cohen."""
-  sums = np.zeros_like(phase_diff[0], dtype= np.complex64)
-  for t in range(len(phase_diff)):
-    cur_phase_diff = phase_diff[t]
-    cur_time = times[t]
-    sums += ne.evaluate('exp(1j * cur_phase_diff * cur_time)') # .astype(np.complex64)
-  return  np.abs(sums / len(phase_diff))
-'''
 
 def epochs_ispc(epochs_tfr):
     """
@@ -75,20 +64,12 @@ def epochs_ispc(epochs_tfr):
 
     return ispc_matrix
 
-"""
-from multiprocessing import Pool
-def multi_ispc(epochs_tfr, n_jobs=4):
-    parts = np.linspace(0, len(epochs_tfr), n_jobs + 1, dtype=int)
-    cuts = [epochs_tfr[parts[i]:parts[i+1]] for i in range(n_jobs)]
-    with Pool(n_jobs) as pool:
-        results = pool.map(epochs_ispc, cuts)
-    return np.concatenate(results, axis=0)
-"""
-from joblib import Parallel, delayed
+
 def multi_ispc(epochs_tfr, n_jobs=4):
     parts = np.linspace(0, len(epochs_tfr), n_jobs + 1, dtype=int)
     results = Parallel(n_jobs=n_jobs)(delayed(epochs_ispc)(epochs_tfr[parts[i]:parts[i+1]]) for i in range(n_jobs))
     return np.concatenate(results, axis=0)
+
 
 def plot_connectivity_matrix(con, node_names, title = "Connectivity Matrix"):
     plt.pcolormesh(con[::-1], vmin=0, vmax=1)
@@ -101,3 +82,36 @@ def plot_connectivity_matrix(con, node_names, title = "Connectivity Matrix"):
     plt.colorbar(ticks=[0, 0.5, 1])
     plt.show()
 
+
+## unused functions:
+
+'''
+from multiprocessing import Pool
+def multi_ispc(epochs_tfr, n_jobs=4):
+    parts = np.linspace(0, len(epochs_tfr), n_jobs + 1, dtype=int)
+    cuts = [epochs_tfr[parts[i]:parts[i+1]] for i in range(n_jobs)]
+    with Pool(n_jobs) as pool:
+        results = pool.map(epochs_ispc, cuts)
+    return np.concatenate(results, axis=0)
+'''
+
+'''
+def core_ispc(phase_diff, times):
+  """A simple implementation of the ISPC formula as described by Cohen."""
+  sums = np.zeros_like(phase_diff[0], dtype= np.complex64)
+  for t in range(len(phase_diff)):
+    cur_phase_diff = phase_diff[t]
+    cur_time = times[t]
+    sums += ne.evaluate('exp(1j * cur_phase_diff * cur_time)') # .astype(np.complex64)
+  return  np.abs(sums / len(phase_diff))
+'''
+
+'''
+def core_ispc(phase_diff, times):
+  """A simple implementation of the ISPC formula as described by Cohen."""
+  sums = np.zeros_like(phase_diff[0], dtype= np.complex64)
+  for t in range(len(phase_diff)):
+    product_term = phase_diff[t] * times[t]
+    sums += np.exp(1j * product_term) # .astype(np.complex64)
+  return  np.abs(sums / len(phase_diff))
+'''

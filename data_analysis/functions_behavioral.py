@@ -1,3 +1,8 @@
+# functions_behavioral.py
+#
+# A collection of functions used to compute our behavioral measures
+#
+
 import numpy as np
 import pandas as pd
 import mne

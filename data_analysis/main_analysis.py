@@ -1,8 +1,18 @@
+# main_analysis.py
+#
+# Apply the entire processing pipeline to the data, from applying
+# the (hand-corrected) preprocessing through generating ISPCs to calculating
+# small worlds.
+#
+#
+# Note: This is the first version of the preprocessing and might not be
+# entirely up-to-date, especially for the ISPC and small-world calculations.
+
 import sys
 import os.path as op
-#module_path = op.abspath(op.join('..'))
-#if module_path not in sys.path:
-#    sys.path.append(module_path)
+module_path = op.abspath(op.join('..'))
+if module_path not in sys.path:
+    sys.path.append(module_path)
 
 import pandas as pd
 import mne
@@ -21,7 +31,7 @@ from data_analysis.functions_graph_theory import \
 
 
 subject_dir = "/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/mne_data/sourcedata/"
-behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/Behavioural_Analysis/BehaviouralData"
+behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/behavioral_data"
 
 
 

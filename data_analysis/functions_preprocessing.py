@@ -1,5 +1,7 @@
-# -*- coding: utf-8 -*-
-
+# functions_connectivity.py
+#
+# A collection of functions used for preprocessing EEG data
+#
 import os.path as op
 
 import numpy as np

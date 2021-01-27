@@ -1,3 +1,10 @@
+# main_ispc.py
+#
+# Load the phase vectors created for each subject pair, and
+# calculate ISPCs from it. This file was used for the final
+# analysis (after main_phases.py and before main_swi.py).
+#
+
 import sys
 import os.path as op
 module_path = op.abspath(op.join('..'))
@@ -25,7 +32,7 @@ conditions = ["early"]
 n_jobs = 7
 
 subject_dir = "/net/store/nbp/projects/hyperscanning/hyperscanning-2.0/mne_data/sourcedata/"
-behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/Behavioural_Analysis/BehaviouralData"
+behav_dir = "/net/store/nbp/projects/hyperscanning/study_project/NBP_Hyperscanning/data_analysis/behavioral_data"
 result_dir = "/net/store/nbp/projects/hyperscanning/study_project/results"
 
 
