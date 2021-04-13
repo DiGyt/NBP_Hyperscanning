@@ -7,37 +7,25 @@
 import os, sys
 import psychopy
 from psychopy import event, visual, core, sound
-from Hyper_Parameters import *
+from Hyper_Parameters_NEW import *
 import csv
 import pygame
 import threading
 import random
-import parallel
+#import parallel
 
-p = parallel.Parallel()
-
-def print_s1(text_to_print, size):
-    print_screen_one = visual.TextStim(SCREEN_1, text=text_to_print, pos=(0.0,0.0), wrapWidth=1100, height=size, units='pix', autoLog=False)
-    print_screen_one.draw()
-    SCREEN_1.flip()
-
-def print_s2(text_to_print, size):
-    print_screen_two = visual.TextStim(SCREEN_2, text=text_to_print, pos=(0.0,0.0), wrapWidth=1100, height=size, units='pix', autoLog=False)
-    print_screen_two.draw()
-    SCREEN_2.flip()
+#p = parallel.Parallel()
 
 def print_on_screen(s1_text, s2_text, size):
-    print_screen_one = visual.TextStim(SCREEN_1, text=s1_text, pos=(0.0,0.0), wrapWidth=1100, height=size, units='pix', autoLog=False)
-    print_screen_two = visual.TextStim(SCREEN_2, text=s2_text, pos=(0.0,0.0), wrapWidth=1100, height=size, units='pix', autoLog=False)
+    print_screen_one = visual.TextStim(SCREEN_1, text=s1_text, pos=(-width_height[0]/4,0.0), wrapWidth=1100, height=size, units='pix', autoLog=False)
+    print_screen_two = visual.TextStim(SCREEN_1, text=s2_text, pos=(width_height[0]/4,0.0), wrapWidth=1100, height=size, units='pix', autoLog=False)
     print_screen_one.draw()
     print_screen_two.draw()
     SCREEN_1.flip()
-    SCREEN_2.flip()
-
 
 # Create csv file and header
 trial_header = ['pair', 'condition', 'block', 'trial', 'subject', 'tapnr', 'ttap', 'jitter', 'player_start_first']
-with open(path, 'wb') as f:
+with open(path, 'w') as f:
     wr = csv.writer(f)
     wr.writerow(trial_header)
 
@@ -106,7 +94,7 @@ def waitForConfirm(statement, total_dur):
                 core.wait(1.0)
             # --> otherwise print "waiting for other participant" statement
             else:
-                print_s1("%s\n\nReady... wait for other participant" %(statement), 30)
+                print_on_screen("%s\nReady... wait for other participant" %(statement), "Start..", 30)
             press_2 += 1
         elif event == ['7']:
             # In case "r" was pressed + it was 2nd input
@@ -116,51 +104,52 @@ def waitForConfirm(statement, total_dur):
                 core.wait(1.0)
             # --> otherwise wait for other participants key-press (same as above)
             else:
-                print_s2("%s\n\nReady... wait for other participant" %(statement), 30)
+                print_on_screen("Start..", "%s\nReady... wait for other participant" %(statement), 30)
             press_7 += 1
         if press_2 >= 1 and press_7 >= 1:
             pressed = True
             print('Starting...')
 
 def print_red_fix_cross():
-    fixation_screen_1 = psychopy.visual.ShapeStim(SCREEN_1,vertices = ((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units = 'pix', lineWidth = 10,closeShape = False, lineColor = red)
-    fixation_screen_2 = psychopy.visual.ShapeStim(SCREEN_2,vertices = ((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units = 'pix', lineWidth = 10,closeShape = False, lineColor = red)
+    fixation_screen_1 = psychopy.visual.ShapeStim(SCREEN_1, pos=(-width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units = 'pix', lineWidth = 10,closeShape = False, lineColor = red)
+    fixation_screen_2 = psychopy.visual.ShapeStim(SCREEN_1, pos=(width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units = 'pix', lineWidth = 10,closeShape = False, lineColor = red)
     fixation_screen_1.draw()
     fixation_screen_2.draw()
     SCREEN_1.flip()
-    SCREEN_2.flip()
 
 
 
 
 # Practice block for participants to get used to their sound and the procedure
 def testBlock():
-    fixation_s1 = psychopy.visual.ShapeStim(SCREEN_1,vertices = ((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
-    fixation_s2 = psychopy.visual.ShapeStim(SCREEN_2,vertices = ((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
+    fixation_s1 = psychopy.visual.ShapeStim(SCREEN_1, pos=(-width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
+    fixation_s2 = psychopy.visual.ShapeStim(SCREEN_1, pos=(width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
     if random.random() > .5:
         fixation_s1.draw()
         SCREEN_1.flip()
-        p.setData(1)
+        #p.setData(1)
         core.wait(0.01)
-        p.setData(0)
-        core.wait(random.choice(jitters_onset))
-        fixation_s2.draw()
-        SCREEN_2.flip()
-        p.setData(2)
-        core.wait(0.01)
-        p.setData(0)
-    else:
-        fixation_s2.draw()
-        SCREEN_2.flip()
-        p.setData(2)
-        core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
         core.wait(random.choice(jitters_onset))
         fixation_s1.draw()
+        fixation_s2.draw()
         SCREEN_1.flip()
-        p.setData(1)
+        #p.setData(2)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
+    else:
+        fixation_s2.draw()
+        SCREEN_1.flip()
+        #p.setData(2)
+        core.wait(0.01)
+        #p.setData(0)
+        core.wait(random.choice(jitters_onset))
+        fixation_s2.draw()
+        fixation_s1.draw()
+        SCREEN_1.flip()
+        #p.setData(1)
+        core.wait(0.01)
+        #p.setData(0)
     # wait until the 'pre' time has passed
     core.wait(pre_duration)
     # Counter for nr. of taps
@@ -191,39 +180,39 @@ def trialBlock(block, trial, condition):
     clock = core.Clock()
     # initialize trial_dur to track duration of one trial
     trial_dur = core.Clock()
-    p.setData(48)
+    #p.setData(48)
     core.wait(0.01)
-    p.setData(0)
+    #p.setData(0)
     # playing the start sound
-    fixation_s1 = psychopy.visual.ShapeStim(SCREEN_1,vertices = ((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
-    fixation_s2 = psychopy.visual.ShapeStim(SCREEN_2,vertices = ((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
+    fixation_s1 = psychopy.visual.ShapeStim(SCREEN_1, pos=(-width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
+    fixation_s2 = psychopy.visual.ShapeStim(SCREEN_1, pos=(width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
     jitter_trial = random.choice(jitters_onset)
     # if a random chosen nr. from interval [0,1) is bigger than .5, show fixation cross first on screen 1
     if random.random() > .5:
-    	fixation_s1.draw()
-    	SCREEN_1.flip()
-        p.setData(4)
+        fixation_s1.draw()
+        SCREEN_1.flip()
+        #p.setData(4)
         core.wait(0.01)
-        p.setData(0)
-    	core.wait(jitter_trial)
-    	fixation_s2.draw()
-    	SCREEN_2.flip()
-        p.setData(5)
+        #p.setData(0)
+        core.wait(jitter_trial)
+        fixation_s2.draw()
+        SCREEN_1.flip()
+        #p.setData(5)
         core.wait(0.01)
-        p.setData(0)
-    	player_start_first = 1
+        #p.setData(0)
+        player_start_first = 1
     else:
-    	fixation_s2.draw()
-    	SCREEN_2.flip()
-        p.setData(5)
+        fixation_s2.draw()
+        SCREEN_1.flip()
+        #p.setData(5)
         core.wait(0.01)
-        p.setData(0)
-    	core.wait(jitter_trial)
-    	fixation_s1.draw()
-    	SCREEN_1.flip()
-        p.setData(4)
+        #p.setData(0)
+        core.wait(jitter_trial)
+        fixation_s1.draw()
+        SCREEN_1.flip()
+        #p.setData(4)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
         player_start_first = 2
     # wait until the 'pre' time has passed
     core.wait(pre_duration)
@@ -246,41 +235,41 @@ def trialBlock(block, trial, condition):
             bp_player1.play()
             press_s1 += 1
             if press_s1 == 1:
-                p.setData(6)
+                #p.setData(6)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s1 == 2:
-                p.setData(7)
+                #p.setData(7)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s1 == 3:
-                p.setData(8)
+                #p.setData(8)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s1 == 4:
-                p.setData(9)
+                #p.setData(9)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s1 == 5:
-                p.setData(10)
+                #p.setData(10)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s1 == 6:
-                p.setData(11)
+                #p.setData(11)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s1 == 7:
-                p.setData(12)
+                #p.setData(12)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s1 == 8:
-                p.setData(13)
+                #p.setData(13)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s1 == 9:
-                p.setData(14)
+                #p.setData(14)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             # define the list of output parameters that will be passed to the csv file FOR SUBJECT1
             trialdata1 = []
             trialdata1.append(pairnumber)
@@ -300,41 +289,41 @@ def trialBlock(block, trial, condition):
             bp_player2.play()
             press_s2 += 1
             if press_s2 == 1:
-                p.setData(15)
+                #p.setData(15)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s2 == 2:
-                p.setData(16)
+                #p.setData(16)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s2 == 3:
-                p.setData(17)
+                #p.setData(17)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s2 == 4:
-                p.setData(18)
+                #p.setData(18)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s2 == 5:
-                p.setData(19)
+                #p.setData(19)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s2 == 6:
-                p.setData(20)
+                #p.setData(20)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s2 == 7:
-                p.setData(21)
+                #p.setData(21)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s2 == 8:
-                p.setData(22)
+                #p.setData(22)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             if press_s2 == 9:
-                p.setData(23)
+                #p.setData(23)
                 core.wait(0.01)
-                p.setData(0)
+                #p.setData(0)
             # define the list of output parameters that will be passed to the csv file FOR SUBJECT2
             trialdata2 = []
             trialdata2.append(pairnumber)
@@ -354,7 +343,7 @@ def trialBlock(block, trial, condition):
             # all output info of subject2 (saved in sub2) is appended at the end of sub1
             # this is then returned in order to be written to the csv file
             sub1.extend(sub2)
-    p.setData(49)
+    #p.setData(49)
     core.wait(0.01)
     p.setData(0)
     print("Trial duration: {}".format(round(trial_dur.getTime(),2)))

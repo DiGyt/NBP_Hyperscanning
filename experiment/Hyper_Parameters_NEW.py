@@ -69,19 +69,19 @@ bp_player2 = pygame.mixer.Sound("Sounds/sound2-75ms.wav")
 #### create psychopy screens
 # Create a window and the stimuli to be shown on screen. Also implemented two circles as visual feedback of the tapping
 if full_screen == True:
-    SCREEN_1 = psychopy.visual.Window(fullscr = True, pos = None, screen = 0)
+    SCREEN_1 = psychopy.visual.Window(fullscr = True, pos = None, screen = 1)
     m = psychopy.event.Mouse(win=SCREEN_1)
     m.setVisible(0)
-    SCREEN_2 = psychopy.visual.Window(fullscr = True, pos = None, screen = 1)
-    m = psychopy.event.Mouse(win=SCREEN_2)
-    m.setVisible(0)
+    #SCREEN_2 = psychopy.visual.Window(fullscr = True, pos = None, screen = 1)
+    #m = psychopy.event.Mouse(win=SCREEN_2)
+    #m.setVisible(0)
 else:
-    SCREEN_1 = psychopy.visual.Window(width_height, pos = None, screen = 0)
+    SCREEN_1 = psychopy.visual.Window(width_height)
     m = psychopy.event.Mouse(win=SCREEN_1)
     m.setVisible(0)
-    SCREEN_2 = psychopy.visual.Window(width_height, pos = None, screen = 1 )
-    m = psychopy.event.Mouse(win=SCREEN_2)
-    m.setVisible(0)
+    #SCREEN_2 = psychopy.visual.Window(width_height, pos = None, screen = 1 )
+    #m = psychopy.event.Mouse(win=SCREEN_2)
+    #m.setVisible(0)
 
 
 # text to display (always double because separate key-presses for each screen or subject)

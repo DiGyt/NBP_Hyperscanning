@@ -34,8 +34,7 @@ total_dur = core.Clock()
 clock3 = core.Clock()
 
 # Check for screen setup
-print_s1("SCREEN 1", 40)
-print_s2("SCREEN 2", 40)
+print_on_screen("SCREEN 1", "SCREEN 2", 40)
 waitForExperimenter()
 
 #######################
@@ -126,17 +125,16 @@ for block in range(num_blocks):
         core.wait(0.01)
         p.setData(0)
     for trial in range(num_trials):
-    	if trial == 0:
-    	    fixation_s1 = psychopy.visual.ShapeStim(SCREEN_1,vertices = ((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor = red)
-    	    fixation_s2 = psychopy.visual.ShapeStim(SCREEN_2,vertices = ((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor = red)
-    	    fixation_s1.draw()
-    	    fixation_s2.draw()
-    	    SCREEN_1.flip()
-    	    SCREEN_2.flip()
+        if trial == 0:
+            fixation_s1 = psychopy.visual.ShapeStim(SCREEN_1, pos=(-width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor = red)
+            fixation_s2 = psychopy.visual.ShapeStim(SCREEN_1, pos=(width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor = red)
+            fixation_s1.draw()
+            fixation_s2.draw()
+            SCREEN_1.flip()
             p.setData(3)
             core.wait(0.01)
             p.setData(0)
-    	    core.wait(iti)
+            core.wait(iti)
         dataset = trialBlock(block+1, ful_trial, condition)
         # Write the aquired data of each trial into the csv
         with open(path, 'a') as f:
