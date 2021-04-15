@@ -6,15 +6,21 @@
 
 import os, sys
 import psychopy
-from psychopy import event, visual, core, sound
+from psychopy import prefs
+prefs.hardware['audioLib'] = ['PTB']
+prefs.hardware['audioDevice'] = 'USB Audio Device: - (hw:3,0)'
+from psychopy import visual, event, core
+from psychopy import sound
+import psychtoolbox as ptb
 from Hyper_Parameters_NEW import *
 import csv
-import pygame
 import threading
 import random
 #import parallel
 
 #p = parallel.Parallel()
+bp_player1 = sound.Sound(sound_bp_player1, bp_soundlength)
+bp_player2 = sound.Sound(sound_bp_player2, bp_soundlength)
 
 def print_on_screen(s1_text, s2_text, size):
     print_screen_one = visual.TextStim(SCREEN_1, text=s1_text, pos=(-width_height[0]/4,0.0), wrapWidth=1100, height=size, units='pix', autoLog=False)
@@ -33,6 +39,7 @@ with open(path, 'w') as f:
 # Check whether participants press correct button on their toolboxes
 # defineButton() assigns correct button to Toolbox
 def defineButton1():
+    bp_player1 = sound.Sound(sound_bp_player1, bp_soundlength)
     print('Fetch buttons for experiment... \n-->Press \'yellow-button\' :')
     print_on_screen("You\'re assigned to the \'yellow-button\'.\nPlease press it once to hear your sound...", "Wait for other participant...", 30)
     box1 = False
@@ -47,9 +54,9 @@ def defineButton1():
             print('pressed wrong button, try again...')
 
 
-
 # Same procedure for Toolbox2
 def defineButton2():
+    bp_player2 = sound.Sound(sound_bp_player2, bp_soundlength)
     print('...\n...\n-->Press \'yellow\' key:')
     print_on_screen("Wait for other participant...", "You\'re assigned to the \'yellow-button\'.\nPlease press it once to hear your sound...", 30)
     box2 = False
@@ -94,7 +101,7 @@ def waitForConfirm(statement, total_dur):
                 core.wait(1.0)
             # --> otherwise print "waiting for other participant" statement
             else:
-                print_on_screen("%s\nReady... wait for other participant" %(statement), "Start..", 30)
+                print_on_screen("%s\nReady... wait for other participant" %(statement), statement, 30)
             press_2 += 1
         elif event == ['7']:
             # In case "r" was pressed + it was 2nd input
@@ -104,7 +111,7 @@ def waitForConfirm(statement, total_dur):
                 core.wait(1.0)
             # --> otherwise wait for other participants key-press (same as above)
             else:
-                print_on_screen("Start..", "%s\nReady... wait for other participant" %(statement), 30)
+                print_on_screen(statement, "%s\nReady... wait for other participant" %(statement), 30)
             press_7 += 1
         if press_2 >= 1 and press_7 >= 1:
             pressed = True
@@ -345,7 +352,7 @@ def trialBlock(block, trial, condition):
             sub1.extend(sub2)
     #p.setData(49)
     core.wait(0.01)
-    p.setData(0)
+    #p.setData(0)
     print("Trial duration: {}".format(round(trial_dur.getTime(),2)))
     print_red_fix_cross()
     core.wait(iti)

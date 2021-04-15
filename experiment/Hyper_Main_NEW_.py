@@ -15,15 +15,17 @@
 # Do not forget to define your experiment and triggers in the
 # 'Experiment Parameters' section in Hyper_Parameters.py
 import os, sys
-import pygame
+import psychopy
+from psychopy import prefs
 from Hyper_Parameters_NEW import *
 from Hyper_Functions_NEW import *
-import psychopy
-from psychopy import event, visual, core, data, logging
 import csv
 import threading
 import random
 
+# Use the key 'q' + Ctrl in combination to quit the experiment
+event.globalKeys.add(key='q', modifiers=['ctrl'], func=core.quit)
+print('Press \'q\' to quit the experiment')
 #################################
 # Start with experiment procedure
 #################################
@@ -60,7 +62,7 @@ for x in range(num_trials_training):
 #########################
 print_on_screen(s1_exp_block_message, s2_exp_block_message, 30)
 # call waitForConfirm() to start experiment
-waitForConfirm("EXPERIMENT.", total_dur)
+waitForConfirm("EXPERIMENT.", total_dur, s1_instructions_message)
 # Reset clock to count from the start of the "real experiment"
 total_dur.reset()
 # enumerate trials consecutively from 1 to last without reset
@@ -74,56 +76,56 @@ for block in range(num_blocks):
     s2_block_message = "BLOCK Nr. %s\n\nPress \'white-button\' to start" %(block+1)
     print_on_screen(s1_block_message, s2_block_message, 30)
     condition = 'blind'
-    waitForConfirm("BLOCK Nr. %s" %(block+1), total_dur)
+    waitForConfirm("BLOCK Nr. %s" %(block+1))
     # initialize trials of duration num_trials:
     if block == 1:
-        p.setData(24)
+        #p.setData(24)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 2:
-        p.setData(25)
+        #p.setData(25)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 3:
-        p.setData(26)
+        #p.setData(26)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 4:
-        p.setData(27)
+        #p.setData(27)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 5:
-        p.setData(28)
+        #p.setData(28)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 6:
-        p.setData(29)
+        #p.setData(29)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 7:
-        p.setData(30)
+        #p.setData(30)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 8:
-        p.setData(31)
+        #p.setData(31)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 9:
-        p.setData(32)
+        #p.setData(32)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 10:
-        p.setData(33)
+        #p.setData(33)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 11:
-        p.setData(34)
+        #p.setData(34)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 12:
-        p.setData(35)
+        #p.setData(35)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     for trial in range(num_trials):
         if trial == 0:
             fixation_s1 = psychopy.visual.ShapeStim(SCREEN_1, pos=(-width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor = red)
@@ -131,9 +133,9 @@ for block in range(num_blocks):
             fixation_s1.draw()
             fixation_s2.draw()
             SCREEN_1.flip()
-            p.setData(3)
+            #p.setData(3)
             core.wait(0.01)
-            p.setData(0)
+            #p.setData(0)
             core.wait(iti)
         dataset = trialBlock(block+1, ful_trial, condition)
         # Write the aquired data of each trial into the csv
@@ -145,53 +147,53 @@ for block in range(num_blocks):
         # waiting time till next trial begins
         core.wait(random.choice(iti_jitters))
     if block == 1:
-        p.setData(36)
+        #p.setData(36)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 2:
-        p.setData(37)
+        #p.setData(37)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 3:
-        p.setData(38)
+        #p.setData(38)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 4:
-        p.setData(39)
+        #p.setData(39)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 5:
-        p.setData(40)
+        #p.setData(40)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 6:
-        p.setData(41)
+        #p.setData(41)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 7:
-        p.setData(42)
+        #p.setData(42)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 8:
-        p.setData(43)
+        #p.setData(43)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 9:
-        p.setData(44)
+        #p.setData(44)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 10:
-        p.setData(45)
+        #p.setData(45)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 11:
-        p.setData(46)
+        #p.setData(46)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     if block == 12:
-        p.setData(47)
+        #p.setData(47)
         core.wait(0.01)
-        p.setData(0)
+        #p.setData(0)
     # Initialize the Break after Block is finished
     # Display text ("Pause block...")
     # if any([block+1==3, block+1==6, block+1==9]):

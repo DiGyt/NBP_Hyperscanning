@@ -4,10 +4,9 @@
 ########################################
 import os, sys
 import psychopy
-from psychopy import event, visual, core, sound, data, logging
+from psychopy import visual, event, core, logging
 import numpy as np
 import pandas as pd
-import pygame
 
 ######################################
 # create a data subfolder for log-data
@@ -49,22 +48,17 @@ pre_duration = 3              # waiting time til trial starts
 iti = 1.0                     # inter trial interval
 jitters_onset = [0.05, 0.025, 0.075, 0.1]
 iti_jitters = [1.25, 1.5, 1.75]
-full_screen = True
+full_screen = False
 width_height = [1920,1080]
 fix_cross_arm_len = 50 # in pixels
 red = [.7,-1,-1]
-####################
-# Pygame mixer sound
-####################
-# Initialize pygame mixer settings
-pygame.mixer.pre_init(frequency = 44100, size = -16, channels = 2, buffer = 2048)       # channels = 2 means stereo, =1 means mono
-pygame.mixer.init()
-trialstart = pygame.mixer.Sound("Sounds/start-short.wav")
-trialend = pygame.mixer.Sound("Sounds/stop.wav")
-breaktone = pygame.mixer.Sound("Sounds/break.wav")
-bp_player1 = pygame.mixer.Sound("Sounds/sound1-75ms.wav")
-bp_player2 = pygame.mixer.Sound("Sounds/sound2-75ms.wav")
-#help(pygame.mixer.Sound)
+
+###################################
+# Psychotoolbox (PTB) sound library
+###################################
+sound_bp_player1 = 'Sounds\sound1-75ms'
+sound_bp_player2 = 'Sounds\sound2-75ms'
+bp_soundlength = 0.1
 
 #### create psychopy screens
 # Create a window and the stimuli to be shown on screen. Also implemented two circles as visual feedback of the tapping
@@ -72,16 +66,11 @@ if full_screen == True:
     SCREEN_1 = psychopy.visual.Window(fullscr = True, pos = None, screen = 1)
     m = psychopy.event.Mouse(win=SCREEN_1)
     m.setVisible(0)
-    #SCREEN_2 = psychopy.visual.Window(fullscr = True, pos = None, screen = 1)
-    #m = psychopy.event.Mouse(win=SCREEN_2)
-    #m.setVisible(0)
+
 else:
     SCREEN_1 = psychopy.visual.Window(width_height)
     m = psychopy.event.Mouse(win=SCREEN_1)
     m.setVisible(0)
-    #SCREEN_2 = psychopy.visual.Window(width_height, pos = None, screen = 1 )
-    #m = psychopy.event.Mouse(win=SCREEN_2)
-    #m.setVisible(0)
 
 
 # text to display (always double because separate key-presses for each screen or subject)
