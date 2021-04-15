@@ -43,14 +43,13 @@ waitForExperimenter()
 # Instruct participants
 #######################
 # Show initial instructions on screen
-print_on_screen(s1_instructions_message, s2_instructions_message, 25)
-waitForConfirm(" ", total_dur)
+waitForConfirm(s1_instructions_message, total_dur, 25)
 # Call defineButton() to assign Buttons to Toolboxes
 defineButton1()
 defineButton2()
 # call waitForConfirm() to start testBlock
-print_on_screen(s1_practice_block_message, s2_practice_block_message, 30)
-waitForConfirm("PRACTICE BLOCK.", total_dur)
+waitForConfirm(s1_practice_block_message, total_dur)
+
 # start testBlock()
 for x in range(num_trials_training):
     print_red_fix_cross()
@@ -62,7 +61,7 @@ for x in range(num_trials_training):
 #########################
 print_on_screen(s1_exp_block_message, s2_exp_block_message, 30)
 # call waitForConfirm() to start experiment
-waitForConfirm("EXPERIMENT.", total_dur, s1_instructions_message)
+waitForConfirm("EXPERIMENT\n Please press the \'white-button\' to start.", total_dur, 25) #s1_instructions_message)
 # Reset clock to count from the start of the "real experiment"
 total_dur.reset()
 # enumerate trials consecutively from 1 to last without reset
@@ -72,11 +71,8 @@ for block in range(num_blocks):
     #######################################################
     # Condition 1: Subjects do not see each other --> blind
     #######################################################
-    s1_block_message = "BLOCK Nr. %s\n\nPress \'white-button\' to start" %(block+1)
-    s2_block_message = "BLOCK Nr. %s\n\nPress \'white-button\' to start" %(block+1)
-    print_on_screen(s1_block_message, s2_block_message, 30)
     condition = 'blind'
-    waitForConfirm("BLOCK Nr. %s" %(block+1))
+    waitForConfirm("BLOCK Nr. %s\nPlease press \'white-button\' to start." %(block+1), total_dur)
     # initialize trials of duration num_trials:
     if block == 1:
         #p.setData(24)
@@ -215,8 +211,7 @@ for block in range(num_blocks):
         waitForExperimenter()
     else:
         pass
-    print_on_screen(s1_break_message, s2_break_message, 30)
-    waitForConfirm("BREAK.", total_dur)
+    waitForConfirm(s1_break_message, total_dur)
 
 
 

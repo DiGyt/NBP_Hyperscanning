@@ -82,7 +82,8 @@ def waitForExperimenter():
 
 # Function that catches key-presses to confirm the proceeding of experiment
 # Waits for keypress "l" and "r" to proceed and "escape" to quit
-def waitForConfirm(statement, total_dur):
+def waitForConfirm(statement, total_dur, size = 30):
+    print_on_screen(statement, statement, size)
     print('...\n...\nPress \"space\" to start %s or \"esc\" to quit:' %(statement))
     press_2 = 0
     press_7 = 0
@@ -101,7 +102,7 @@ def waitForConfirm(statement, total_dur):
                 core.wait(1.0)
             # --> otherwise print "waiting for other participant" statement
             else:
-                print_on_screen("%s\nReady... wait for other participant" %(statement), statement, 30)
+                print_on_screen("Ready... wait for other participant", statement, size)
             press_2 += 1
         elif event == ['7']:
             # In case "r" was pressed + it was 2nd input
@@ -111,7 +112,8 @@ def waitForConfirm(statement, total_dur):
                 core.wait(1.0)
             # --> otherwise wait for other participants key-press (same as above)
             else:
-                print_on_screen(statement, "%s\nReady... wait for other participant" %(statement), 30)
+                print('P2 is ready')
+                print_on_screen(statement, "Ready... wait for other participant", size)
             press_7 += 1
         if press_2 >= 1 and press_7 >= 1:
             pressed = True
@@ -190,7 +192,6 @@ def trialBlock(block, trial, condition):
     #p.setData(48)
     core.wait(0.01)
     #p.setData(0)
-    # playing the start sound
     fixation_s1 = psychopy.visual.ShapeStim(SCREEN_1, pos=(-width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
     fixation_s2 = psychopy.visual.ShapeStim(SCREEN_1, pos=(width_height[0]/4, 0.0), vertices=((0,-fix_cross_arm_len),(0,fix_cross_arm_len),(0,0),(-fix_cross_arm_len,0),(fix_cross_arm_len,0)), units='pix', lineWidth = 10,closeShape = False, lineColor ='green')
     jitter_trial = random.choice(jitters_onset)
@@ -202,6 +203,7 @@ def trialBlock(block, trial, condition):
         core.wait(0.01)
         #p.setData(0)
         core.wait(jitter_trial)
+        fixation_s1.draw()
         fixation_s2.draw()
         SCREEN_1.flip()
         #p.setData(5)
@@ -215,6 +217,7 @@ def trialBlock(block, trial, condition):
         core.wait(0.01)
         #p.setData(0)
         core.wait(jitter_trial)
+        fixation_s2.draw()
         fixation_s1.draw()
         SCREEN_1.flip()
         #p.setData(4)
